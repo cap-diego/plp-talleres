@@ -35,11 +35,8 @@ data Material a
 crearFabricaSimple :: (a -> b) -> (Fabrica a b)
 crearFabricaSimple f = map f
 
--- map :: (a -> b) -> [a] ->
-
 -- Ejercicio 1 b
 -- Usando la función crearFabricaSimple, definir las siguientes fábricas:
-
 -- neg que dada una lista de booleanos devuelve una lista con la negación de cada uno
 neg :: Fabrica Bool Bool
 neg = crearFabricaSimple not
@@ -50,7 +47,7 @@ esPar = crearFabricaSimple even
 
 -- sumarTuplas que dada una lista de tuplas numéricas devuelve una lista con la suma de sus componentes
 sumarTuplas :: Num a => Fabrica (a, a) a
-sumarTuplas = crearFabricaSimple (\(a, b) -> a + b)
+sumarTuplas = crearFabricaSimple (uncurry (+))
 
 -- Ejercicio 2
 -- Definir el esquema de recursión estructural para el tipo Material
@@ -86,13 +83,16 @@ entrelazar = foldr (\(x, y) rec -> [x] ++ [y] ++ rec) []
 -- Ejercicio 5 a
 -- Dado un elemento y un material, determinar la pureza de dicho material
 -- respecto a dicho elemento
-pureza :: (Eq a) => a -> Material a -> Float
+
+-- Version con recursion explicita:
 -- pureza a (MateriaPrima m) = if a == m then 100.0 else 0.0
 -- pureza a (Mezclar m1 porc m2) = ((pureza a m1) * porc) / 100 + ((pureza a m2) * porc / 100)
+
+pureza :: (Eq a) => a -> Material a -> Float
 pureza m = foldMaterial calcPurezaPrima calcPurezaMezc
   where
-    calcPurezaPrima = (\a -> if a == m then 100.0 else 0.0)
-    calcPurezaMezc = (\m1rec porc m2rec -> (porc * m1rec / 100) + (m2rec * (100 - porc) / 100))
+    calcPurezaPrima a = if a == m then 100.0 else 0.0
+    calcPurezaMezc purezaM1 porc purezaM2 = (purezaM1 * porc / 100) + (purezaM2 * (100 - porc) / 100)
 
 -- Ejercicio 5 b
 -- Dada una lista de materiales y una lista de restricciones de pureza (representadas
@@ -104,22 +104,17 @@ filtrarPorPureza mats xs = filter (\mat -> cumpleFiltros mat xs) mats
 cumpleFiltros :: (Eq a) => Material a -> [(a, Float)] -> Bool
 cumpleFiltros m = foldr (\(matFiltro, porcFiltro) rec -> (pureza matFiltro m >= porcFiltro) && rec) True
 
--- [Mezclar verdad 44.5 mentira, Mezclar verdad 80.0 mentira, Mezclar mentira 99.0 verdad]
--- [(True, 50.0), (False , 1.0)] =
--- [Mezclar verdad 80.0 mentira]
-
--- verificarReqs devuelve lista vacia si el material NO cumple alguno de los requerimientos
--- verificarReqs :: Material a -> [(a, Float)] -> [Material a]
--- verificarReqs m reqs = foldr (\(x,y) rec -> if (pureza x m) >= y then m : rec else rec) []
-
 -- Ejercicio 6 a
 -- Crear un emparejador
 -- Un emparejador es una fábrica que en lugar de producir algo,
 -- lo que hace es agrupar los materiales en pares
-emparejador :: [a] -> [(a, a)]
+
+-- Version con recursion explicita:
 -- emparejador [] = []
 -- emparejador (x : xs) = if null xs then [] else (x, head xs) : (emparejador (tail xs))
-emparejador l = zip (fst (paresEImpares l)) (snd (paresEImpares l))
+
+emparejador :: [a] -> [(a, a)]
+emparejador l = uncurry zip (paresEImpares l)
 
 paresEImpares :: [a] -> ([a], [a])
 paresEImpares = foldr (\x rec -> (x : snd rec, fst rec)) ([], [])
@@ -145,19 +140,19 @@ allTests =
     ]
 
 -- Ejemplos sólo para mostrar cómo se escriben los tests. Reemplazar por los tests propios.
-
 testsEj1 =
   test
-    [ [4, 3, 2] ~=? crearFabricaSimple (\a -> a + 1) [3, 2, 1],
+    [ [4, 3, 2] ~=? crearFabricaSimple (+ 1) [3, 2, 1],
       [False, False, True] ~=? neg [True, True, False],
       [False, True, False] ~=? esPar [3, 2, 1],
-      [4, 3, 2] ~=? sumarTuplas [(1, 3), (2, 1), (1, 1)]
+      [4, 3, 2] ~=? sumarTuplas [(1, 3), (2, 1), (1, 1)],
+      [1, 2, 3, 4, 5] ~=? crearFabricaSimple id (take 5 [1 ..]),
+      [1, 2, 3] ~=? crearFabricaSimple (+ (-1)) (crearFabricaSimple (+ 1) [1, 2, 3])
     ]
 
 testsEj2 =
   test
-    [ 2 ~=? 1 + 1,
-      4 ~=? 2 * 2
+    [ 2 ~=? 1 + 1
     ]
 
 testsEj3 =
@@ -169,21 +164,34 @@ testsEj3 =
 testsEj4 =
   test
     [ [True, False, True, True] ~=? secuenciar esPar neg [1, 2, 3, 5],
-      [False, False, True, False, True, False] ~=? paralelizar neg esPar [(True, 1), (False, 3), (False, 1)]
+      [False, False, True, False, True, False] ~=? paralelizar neg esPar [(True, 1), (False, 3), (False, 1)],
+      [True, True] ~=? secuenciar neg neg [True, True]
     ]
 
 verdad = MateriaPrima True
 
 mentira = MateriaPrima False
 
+harina = MateriaPrima "Harina"
+
+azucar = MateriaPrima "azucar"
+
+sal = MateriaPrima "sal"
+
 testsEj5 =
   test
     [ 25.0 ~=? pureza True (Mezclar (Mezclar verdad 50.0 mentira) 50.0 mentira),
-      [Mezclar verdad 80.0 mentira] ~=? filtrarPorPureza [Mezclar verdad 44.5 mentira, Mezclar verdad 80.0 mentira, Mezclar mentira 99.0 verdad] [(True, 50.0), (False, 1.0)]
+      [Mezclar verdad 80.0 mentira] ~=? filtrarPorPureza [Mezclar verdad 44.5 mentira, Mezclar verdad 80.0 mentira, Mezclar mentira 99.0 verdad] [(True, 50.0), (False, 1.0)],
+      100.0 ~=? pureza "sal" (Mezclar sal 100.0 sal),
+      0.0 ~=? pureza "azucar" (Mezclar sal 100.0 azucar),
+      10.0 ~=? pureza "sal" (Mezclar sal 10.0 azucar)
     ]
 
 testsEj6 =
   test
-    [ [(1, 2), (3, 4)] ~=? emparejador [1, 2, 3, 4],
-      [5, 9, 11] ~=? crearFabricaCompleja (+) [2, 3, 12, -3, 11, 0]
+    [ [] ~=? emparejador [1],
+      [(1, 2), (3, 4)] ~=? emparejador [1, 2, 3, 4],
+      [5, 9, 11] ~=? crearFabricaCompleja (+) [2, 3, 12, -3, 11, 0],
+      ([0], []) ~=? paresEImpares [0],
+      ([0, 2, 4], [1, 3]) ~=? paresEImpares [0 .. 4]
     ]
