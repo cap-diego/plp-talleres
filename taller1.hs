@@ -152,7 +152,9 @@ testsEj1 =
 
 testsEj2 =
   test
-    [ 2 ~=? 1 + 1
+    [ Mezclar (MateriaPrima "azucar") 80 (MateriaPrima "azucar") ~=? foldMaterial MateriaPrima Mezclar (Mezclar (MateriaPrima "azucar") 80 (MateriaPrima "azucar")),
+	Mezclar (MateriaPrima "azucar") 80 (MateriaPrima "azucar") ~=? foldMaterial (\a -> MateriaPrima "azucar") Mezclar (Mezclar (MateriaPrima "Harina") 80 (MateriaPrima "Huevos")),
+	Mezclar (MateriaPrima "azucar") 80 (MateriaPrima "sal") ~=? foldMaterial (\a -> if a == "Harina" then MateriaPrima "azucar" else MateriaPrima "sal") Mezclar (Mezclar (MateriaPrima "Harina") 80 (MateriaPrima "Huevos"))
     ]
 
 testsEj3 =
