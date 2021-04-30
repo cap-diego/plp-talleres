@@ -147,24 +147,33 @@ testsEj1 =
       [False, True, False] ~=? esPar [3, 2, 1],
       [4, 3, 2] ~=? sumarTuplas [(1, 3), (2, 1), (1, 1)],
       [1, 2, 3, 4, 5] ~=? crearFabricaSimple id (take 5 [1 ..]),
-      [1, 2, 3] ~=? crearFabricaSimple (+ (-1)) (crearFabricaSimple (+ 1) [1, 2, 3])
+      [1, 2, 3] ~=? crearFabricaSimple (+ (-1)) (crearFabricaSimple (+ 1) [1, 2, 3]),
+      [] ~=? crearFabricaSimple (+ 1) [],
+      [] ~=? neg [],
+      [] ~=? esPar [],
+      [] ~=? sumarTuplas []
     ]
 
 testsEj2 =
   test
-    [ 2 ~=? 1 + 1
+    [ Mezclar (MateriaPrima "azucar") 80 (MateriaPrima "azucar") ~=? foldMaterial MateriaPrima Mezclar (Mezclar (MateriaPrima "azucar") 80 (MateriaPrima "azucar")),
+    Mezclar (MateriaPrima "azucar") 80 (MateriaPrima "azucar") ~=? foldMaterial (\a -> MateriaPrima "azucar") Mezclar (Mezclar (MateriaPrima "Harina") 80 (MateriaPrima "Huevos")),
+    Mezclar (MateriaPrima "azucar") 80 (MateriaPrima "sal") ~=? foldMaterial (\a -> if a == "Harina" then MateriaPrima "azucar" else MateriaPrima "sal") Mezclar (Mezclar (MateriaPrima "Harina") 80 (MateriaPrima "Huevos"))
     ]
 
 testsEj3 =
   test
     [ [Mezclar (MateriaPrima "azucar") 80 (MateriaPrima "azucar")] ~=? crearFabricaDeMaterial (\a -> "azucar") [Mezclar (MateriaPrima "Harina") 80 (MateriaPrima "Huevos")],
-      [Mezclar (MateriaPrima "azucar") 80 (MateriaPrima "sal")] ~=? crearFabricaDeMaterial (\a -> if a == "Harina" then "azucar" else "sal") [Mezclar (MateriaPrima "Harina") 80 (MateriaPrima "Huevos")]
+      [Mezclar (MateriaPrima "azucar") 80 (MateriaPrima "sal")] ~=? crearFabricaDeMaterial (\a -> if a == "Harina" then "azucar" else "sal") [Mezclar (MateriaPrima "Harina") 80 (MateriaPrima "Huevos")],
+      [Mezclar (MateriaPrima 10) 80 (MateriaPrima 200)] ~=? crearFabricaDeMaterial ((*)2) [Mezclar (MateriaPrima 5) 80 (MateriaPrima 100)]
     ]
 
 testsEj4 =
   test
     [ [True, False, True, True] ~=? secuenciar esPar neg [1, 2, 3, 5],
+      [] ~=? secuenciar esPar neg [],
       [False, False, True, False, True, False] ~=? paralelizar neg esPar [(True, 1), (False, 3), (False, 1)],
+      [] ~=? paralelizar neg esPar [],
       [True, True] ~=? secuenciar neg neg [True, True]
     ]
 
