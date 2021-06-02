@@ -1,3 +1,5 @@
+//--------------------ejercicio 1, 2, 3-----------------------------------------------------
+
 // AgenteDeControl = function (){
 //   this.agencia = "Control";
 // };
@@ -19,6 +21,42 @@
 //   agencia.programa.bind(agente)()
 // };
 
+//------------------------------------------------------------------------------------------
+//-----------------------------ejercicio 4--------------------------------------------------
+// AgenteDeControl = function (){
+//   this.agencia = "Control";
+// };
+//
+// smart = new AgenteDeControl();
+//
+// Agencia = function (agentes, idLabel, nLabel){
+//   this.ultimo_id = 0;
+//   this.programa = agentes;
+//   this.idLabel = idLabel;
+//   this.nLabel = nLabel;
+// };
+//
+// control = new Agencia(AgenteDeControl,"idC","nC");
+//
+// Agencia.prototype.setId = function (agente, agencia){
+//   agente[agencia.idLabel] = agencia.ultimo_id;
+//   agencia.ultimo_id = agencia.ultimo_id +1;
+//   agente[agencia.nLabel] = agencia.ultimo_id
+// }
+//
+// nuevoAgente = function (agencia){
+//   let agente = new agencia.programa();
+//   agencia.setId(agente, agencia)
+//   return agente
+// };
+//
+// enrolar = function (agente, agencia){
+//   Object.setPrototypeOf(agente,agencia.programa.prototype)
+//   agencia.setId(agente, agencia)
+//   agencia.programa.bind(agente)()
+// };
+
+//------------------------------Ejercicio5--------------------------------------------------
 
 AgenteDeControl = function (){
   this.agencia = "Control";
@@ -31,36 +69,35 @@ Agencia = function (agentes, idLabel, nLabel){
   this.programa = agentes;
   this.idLabel = idLabel;
   this.nLabel = nLabel;
-  this[idLabel]= 0;
-  this[nLabel] = 0;
 };
 
 control = new Agencia(AgenteDeControl,"idC","nC");
 
-nuevoAgente = function (agencia){
-  let agente = new agencia.programa(); // agencia.programa.prototype
-  agente[agencia.nLabel] = agencia[agencia.nLabel] // --->prototype
+Agencia.prototype.setId = function (agente, agencia){
   agente[agencia.idLabel] = agencia.ultimo_id;
   agencia.ultimo_id = agencia.ultimo_id +1;
+  agente[agencia.nLabel] = agencia.ultimo_id
+}
+
+nuevoAgente = function (agencia){
+  let agente = new agencia.programa();
+  agencia.setId(agente, agencia)
   return agente
 };
 
-
 enrolar = function (agente, agencia){
-  agente[agencia.nLabel] = agencia[agencia.nLabel]
-  agente[agencia.idLabel] = agencia.ultimo_id;
-  agencia.ultimo_id = agencia.ultimo_id +1;
   Object.setPrototypeOf(agente,agencia.programa.prototype)
+  agencia.setId(agente, agencia)
   agencia.programa.bind(agente)()
 };
-// this.idLabel = idLabel; this.nLabel = nLabel;this[idLabel]= 0;this[nLabel] = 0; en el Agencia.program.prototype
-//falta ver lo de agencia.nLabel
-// falta sacar el codigo repetido
-//falta agregar test
+
 
 
 agenteEspecial = undefined;
 camuflar = undefined;
+//falta agregar test
+
+
 
 // Agreguen aquí los tests representados como funciones que toman un objeto res como argumento.
   // Pueden llamar a res.write para escribir en la salida.
@@ -236,3 +273,21 @@ function testEjercicio6(res) {
   // Completar
 
 }
+
+function test1() {
+  control = new Agencia(function() { }, "idC", "nC");
+  kaos = new Agencia(function() { }, "idK", "nK");
+  let agenteK = {};
+  let agenteC = nuevoAgente(control);
+  enrolar(agenteK, kaos);
+  let C_conoce_idC = "idC" in agenteC;
+  let C_conoce_nC = "nC" in agenteC;
+  let C_conoce_idK = "idK" in agenteC;
+  let C_conoce_nK = "nK" in agenteC;
+  let K_conoce_idC = "idC" in agenteK;
+  let K_conoce_nC = "nC" in agenteK;
+  let K_conoce_idK = "idK" in agenteK;
+  let K_conoce_nK = "nK" in agenteK;
+}
+
+test1()
