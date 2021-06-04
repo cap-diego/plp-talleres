@@ -65,29 +65,28 @@ AgenteDeControl = function (){
 smart = new AgenteDeControl();
 
 Agencia = function (agentes, idLabel, nLabel){
-  this.ultimo_id = 0;
   this.programa = agentes;
   this.idLabel = idLabel;
   this.nLabel = nLabel;
+  agentes.prototype[this.nLabel] = 0
 };
 
 control = new Agencia(AgenteDeControl,"idC","nC");
 
-Agencia.prototype.setId = function (agente, agencia){
-  agente[agencia.idLabel] = agencia.ultimo_id;
-  agencia.ultimo_id = agencia.ultimo_id +1;
-  agente[agencia.nLabel] = agencia.ultimo_id
+Agencia.prototype.setId = function (agente){
+  this.programa.prototype[this.nLabel] = this.programa.prototype[this.nLabel] +1;
+  agente[this.idLabel] = this.programa.prototype[this.nLabel];
 }
 
 nuevoAgente = function (agencia){
   let agente = new agencia.programa();
-  agencia.setId(agente, agencia)
+  agencia.setId(agente)
   return agente
 };
 
 enrolar = function (agente, agencia){
   Object.setPrototypeOf(agente,agencia.programa.prototype)
-  agencia.setId(agente, agencia)
+  agencia.setId(agente)
   agencia.programa.bind(agente)()
 };
 
