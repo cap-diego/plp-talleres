@@ -56,7 +56,7 @@
 //   agencia.programa.bind(agente)()
 // };
 
-//------------------------------Ejercicio5--------------------------------------------------
+//------------------------------Ejercicios 5 a 6--------------------------------------------------
 
 AgenteDeControl = function (ag){
   this.agencia = "Control";
@@ -114,10 +114,19 @@ const ag = nuevoAgente(control)
 const ag2 = nuevoAgente(kaos)
 console.log(ag)
 
-agenteEspecial = undefined;
-camuflar = undefined;
-//falta agregar test
+agenteEspecial = function(agencia, skillFn) {
+  this[skillFn.name] = skillFn
+  enrolar(this, agencia)
+}
 
+sal = function(){}
+const esp = new agenteEspecial(control, sal)
+
+camuflar = function(obj) {
+  Object.assign(this, obj)
+};
+
+//falta agregar test
 // Agreguen aquí los tests representados como funciones que toman un objeto res como argumento.
   // Pueden llamar a res.write para escribir en la salida.
   // Si le pasan un booleano como segundo argumento, el color de los que escriban será verde o rojo en base al valor de dicho booleano.
