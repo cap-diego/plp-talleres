@@ -58,45 +58,65 @@
 
 //------------------------------Ejercicio5--------------------------------------------------
 
-AgenteDeControl = function (){
+AgenteDeControl = function (ag){
   this.agencia = "Control";
+  this.agenciaOrigen = ag
+};
+
+
+AgenteDeKaos = function (ag){
+  this.agencia = "Kaos";
+  this.agenciaOrigen = ag
 };
 
 smart = new AgenteDeControl();
 
-Agencia = function (agentes, idLabel, nLabel){
-  this.programa = agentes;
+Agencia = function (agenteFn, idLabel, nLabel) {
+  this.Programa = agenteFn
   this.idLabel = idLabel;
   this.nLabel = nLabel;
-  agentes.prototype[this.nLabel] = 0
+  agenteFn.prototype[this.nLabel] = 0;
+
+  agenteFn.prototype.espiar = function(agencia) {
+    Object.setPrototypeOf(this, agencia.Programa.prototype) //Le permite responder/linkear el total de agentes de la instancia
+    agencia.Programa.bind(this, this.agenciaOrigen)() // Le setea la nueva agencia
+  }
+  
+  agenteFn.prototype.dejarDeEspiar = function() {
+    Object.setPrototypeOf(this, this.agenciaOrigen.Programa.prototype)
+    this.agenciaOrigen.Programa.bind(this, this.agenciaOrigen)()
+  }
 };
 
-control = new Agencia(AgenteDeControl,"idC","nC");
+control = new Agencia(AgenteDeControl,"idC", "nC");
+kaos = new Agencia(AgenteDeKaos,"idK", "nK");
+console.log(control)
 
-Agencia.prototype.setId = function (agente){
-  this.programa.prototype[this.nLabel] = this.programa.prototype[this.nLabel] +1;
-  agente[this.idLabel] = this.programa.prototype[this.nLabel];
+
+Agencia.prototype.setId = function (agente) {
+  this.Programa.prototype[this.nLabel] += 1;
+  agente[this.idLabel] = this.Programa.prototype[this.nLabel];
 }
 
-nuevoAgente = function (agencia){
-  let agente = new agencia.programa();
+nuevoAgente = function (agencia) {
+  let agente = new agencia.Programa(agencia);
   agencia.setId(agente)
   return agente
 };
 
-enrolar = function (agente, agencia){
-  Object.setPrototypeOf(agente,agencia.programa.prototype)
+enrolar = function (agente, agencia) {
+  Object.setPrototypeOf(agente, agencia.Programa.prototype)
   agencia.setId(agente)
-  agencia.programa.bind(agente)()
+  agencia.Programa.bind(agente, agencia)()
 };
 
-
+const ag = nuevoAgente(control)
+const ag2 = nuevoAgente(kaos)
+console.log(ag)
 
 agenteEspecial = undefined;
 camuflar = undefined;
 //falta agregar test
-
-
 
 // Agreguen aquí los tests representados como funciones que toman un objeto res como argumento.
   // Pueden llamar a res.write para escribir en la salida.
