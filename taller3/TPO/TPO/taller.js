@@ -23,50 +23,47 @@
 
 //------------------------------------------------------------------------------------------
 //-----------------------------ejercicio 4--------------------------------------------------
-// AgenteDeControl = function (){
-//   this.agencia = "Control";
-// };
-//
-// smart = new AgenteDeControl();
-//
-// Agencia = function (agentes, idLabel, nLabel){
-//   this.ultimo_id = 0;
-//   this.programa = agentes;
-//   this.idLabel = idLabel;
-//   this.nLabel = nLabel;
-// };
-//
-// control = new Agencia(AgenteDeControl,"idC","nC");
-//
-// Agencia.prototype.setId = function (agente, agencia){
-//   agente[agencia.idLabel] = agencia.ultimo_id;
-//   agencia.ultimo_id = agencia.ultimo_id +1;
-//   agente[agencia.nLabel] = agencia.ultimo_id
-// }
-//
-// nuevoAgente = function (agencia){
-//   let agente = new agencia.programa();
-//   agencia.setId(agente, agencia)
-//   return agente
-// };
-//
-// enrolar = function (agente, agencia){
-//   Object.setPrototypeOf(agente,agencia.programa.prototype)
-//   agencia.setId(agente, agencia)
-//   agencia.programa.bind(agente)()
-// };
+//AgenteDeControl = function (){
+//  this.agencia = "Control";
+//};
+
+//smart = new AgenteDeControl();
+
+//Agencia = function (agentes, idLabel, nLabel){
+//  this.programa = agentes;
+//  this.idLabel = idLabel;
+//  this.nLabel = nLabel;
+//  agentes.prototype[this.nLabel] = 0
+//};
+
+//control = new Agencia(AgenteDeControl,"idC","nC");
+
+//Agencia.prototype.setId = function (agente){
+//  this.programa.prototype[this.nLabel] = this.programa.prototype[this.nLabel] +1;
+//  agente[this.idLabel] = this.programa.prototype[this.nLabel];
+//}
+
+//nuevoAgente = function (agencia){
+//  let agente = new agencia.programa();
+//  agencia.setId(agente)
+//  return agente
+//};
+
+//enrolar = function (agente, agencia){
+//  Object.setPrototypeOf(agente,agencia.programa.prototype)
+//  agencia.setId(agente)
+//  agencia.programa.bind(agente)()
+//};
 
 //------------------------------Ejercicios 5 a 6--------------------------------------------------
 
-AgenteDeControl = function (ag){
+AgenteDeControl = function (){
   this.agencia = "Control";
-  this.agenciaOrigen = ag
 };
 
 
-AgenteDeKaos = function (ag){
+AgenteDeKaos = function (){
   this.agencia = "Kaos";
-  this.agenciaOrigen = ag
 };
 
 smart = new AgenteDeControl();
@@ -78,20 +75,13 @@ Agencia = function (agenteFn, idLabel, nLabel) {
   agenteFn.prototype[this.nLabel] = 0;
 
   agenteFn.prototype.espiar = function(agencia) {
-    Object.setPrototypeOf(this, agencia.Programa.prototype) //Le permite responder/linkear el total de agentes de la instancia
-    agencia.Programa.bind(this, this.agenciaOrigen)() // Le setea la nueva agencia
+    Object.setPrototypeOf(this, agencia.Programa.prototype)
   }
   
   agenteFn.prototype.dejarDeEspiar = function() {
     Object.setPrototypeOf(this, this.agenciaOrigen.Programa.prototype)
-    this.agenciaOrigen.Programa.bind(this, this.agenciaOrigen)()
   }
 };
-
-control = new Agencia(AgenteDeControl,"idC", "nC");
-kaos = new Agencia(AgenteDeKaos,"idK", "nK");
-console.log(control)
-
 
 Agencia.prototype.setId = function (agente) {
   this.Programa.prototype[this.nLabel] += 1;
@@ -107,20 +97,13 @@ nuevoAgente = function (agencia) {
 enrolar = function (agente, agencia) {
   Object.setPrototypeOf(agente, agencia.Programa.prototype)
   agencia.setId(agente)
-  agencia.Programa.bind(agente, agencia)()
+  agencia.Programa.bind(agente)()
 };
-
-const ag = nuevoAgente(control)
-const ag2 = nuevoAgente(kaos)
-console.log(ag)
 
 agenteEspecial = function(agencia, skillFn) {
   this[skillFn.name] = skillFn
   enrolar(this, agencia)
 }
-
-sal = function(){}
-const esp = new agenteEspecial(control, sal)
 
 camuflar = function(obj) {
   Object.assign(this, obj)
@@ -301,21 +284,3 @@ function testEjercicio6(res) {
   // Completar
 
 }
-
-function test1() {
-  control = new Agencia(function() { }, "idC", "nC");
-  kaos = new Agencia(function() { }, "idK", "nK");
-  let agenteK = {};
-  let agenteC = nuevoAgente(control);
-  enrolar(agenteK, kaos);
-  let C_conoce_idC = "idC" in agenteC;
-  let C_conoce_nC = "nC" in agenteC;
-  let C_conoce_idK = "idK" in agenteC;
-  let C_conoce_nK = "nK" in agenteC;
-  let K_conoce_idC = "idC" in agenteK;
-  let K_conoce_nC = "nC" in agenteK;
-  let K_conoce_idK = "idK" in agenteK;
-  let K_conoce_nK = "nK" in agenteK;
-}
-
-test1()
