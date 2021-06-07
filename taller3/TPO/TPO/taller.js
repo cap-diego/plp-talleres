@@ -1,62 +1,3 @@
-//--------------------ejercicio 1, 2, 3-----------------------------------------------------
-
-// AgenteDeControl = function (){
-//   this.agencia = "Control";
-// };
-//
-// smart = new AgenteDeControl();
-//
-// Agencia = function (agentes){
-//   this.programa = agentes;
-// };
-//
-// control = new Agencia(AgenteDeControl);
-//
-// nuevoAgente = function (agencia){
-//   return new agencia.programa();
-// };
-//
-// enrolar = function (agente, agencia){
-//   Object.setPrototypeOf(agente,agencia.programa.prototype)
-//   agencia.programa.bind(agente)()
-// };
-
-//------------------------------------------------------------------------------------------
-//-----------------------------ejercicio 4--------------------------------------------------
-//AgenteDeControl = function (){
-//  this.agencia = "Control";
-//};
-
-//smart = new AgenteDeControl();
-
-//Agencia = function (agentes, idLabel, nLabel){
-//  this.programa = agentes;
-//  this.idLabel = idLabel;
-//  this.nLabel = nLabel;
-//  agentes.prototype[this.nLabel] = 0
-//};
-
-//control = new Agencia(AgenteDeControl,"idC","nC");
-
-//Agencia.prototype.setId = function (agente){
-//  this.programa.prototype[this.nLabel] = this.programa.prototype[this.nLabel] +1;
-//  agente[this.idLabel] = this.programa.prototype[this.nLabel];
-//}
-
-//nuevoAgente = function (agencia){
-//  let agente = new agencia.programa();
-//  agencia.setId(agente)
-//  return agente
-//};
-
-//enrolar = function (agente, agencia){
-//  Object.setPrototypeOf(agente,agencia.programa.prototype)
-//  agencia.setId(agente)
-//  agencia.programa.bind(agente)()
-//};
-
-//------------------------------Ejercicios 5 a 6--------------------------------------------------
-
 AgenteDeControl = function (){
   this.agencia = "Control";
 };
@@ -71,8 +12,6 @@ Agencia = function (agenteFn, idLabel, nLabel) {
 
   agenteFn.prototype.espiar = function(agencia) {
     Object.setPrototypeOf(this, agencia.Programa.prototype)
-	//cuando espia otra agencia, guardo cuál es su agencia de origen
-	agencia.Programa.bind(this, this.agenciaOrigen)()
   }
   
   agenteFn.prototype.dejarDeEspiar = function() {
@@ -85,20 +24,17 @@ control = new Agencia(AgenteDeControl,"idC","nC");
 Agencia.prototype.setId = function (agente) {
   this.Programa.prototype[this.nLabel] += 1;
   agente[this.idLabel] = this.Programa.prototype[this.nLabel];
-  agente.agenciaOrigen = this;
+  agente.agenciaOrigen = this;//Necesario para cuando se espía otra agencia
 }
 
 nuevoAgente = function (agencia) {
   let agente = new agencia.Programa(agencia);
-  //si tiene que espiar otra agencia, guardo la agencia de origen para cuando deje de espiar
-  //agente.agenciaOrigen = agencia;
   agencia.setId(agente)
   return agente
 };
 
 enrolar = function (agente, agencia) {
   Object.setPrototypeOf(agente, agencia.Programa.prototype)
-  //agente.agenciaOrigen = agencia;
   agencia.setId(agente)
   agencia.Programa.bind(agente)()
 };
@@ -112,7 +48,6 @@ camuflar = function(obj) {
   Object.assign(this, obj)
 };
 
-//falta agregar test
 // Agreguen aquí los tests representados como funciones que toman un objeto res como argumento.
   // Pueden llamar a res.write para escribir en la salida.
   // Si le pasan un booleano como segundo argumento, el color de los que escriban será verde o rojo en base al valor de dicho booleano.
@@ -345,7 +280,7 @@ function testEjercicio6(res) {
   let fConstructora = function() {
     this.sombrero = true;
   };
-  let owca = new Agencia(fConstructora, "idOw", "nOw"); //TODO: consultar: está bien que le agreguemos idOw y nOw?
+  let owca = new Agencia(fConstructora, "idOw", "nOw");
   let sacarseElSombrero = function() {
     this.sombrero = false;
   }
@@ -431,4 +366,3 @@ function testEjercicio6(res) {
   res.write(`El agente Pitonisa ${si_o_no(agentePuedeVerElFuturo)} sigue pudiendo ver el futuro`, agentePuedeVerElFuturo);
   
 }
-
