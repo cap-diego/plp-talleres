@@ -71,6 +71,8 @@ Agencia = function (agenteFn, idLabel, nLabel) {
 
   agenteFn.prototype.espiar = function(agencia) {
     Object.setPrototypeOf(this, agencia.Programa.prototype)
+	//cuando espia otra agencia, guardo cuál es su agencia de origen
+	agencia.Programa.bind(this, this.agenciaOrigen)()
   }
   
   agenteFn.prototype.dejarDeEspiar = function() {
@@ -83,16 +85,20 @@ control = new Agencia(AgenteDeControl,"idC","nC");
 Agencia.prototype.setId = function (agente) {
   this.Programa.prototype[this.nLabel] += 1;
   agente[this.idLabel] = this.Programa.prototype[this.nLabel];
+  agente.agenciaOrigen = this;
 }
 
 nuevoAgente = function (agencia) {
   let agente = new agencia.Programa(agencia);
+  //si tiene que espiar otra agencia, guardo la agencia de origen para cuando deje de espiar
+  //agente.agenciaOrigen = agencia;
   agencia.setId(agente)
   return agente
 };
 
 enrolar = function (agente, agencia) {
   Object.setPrototypeOf(agente, agencia.Programa.prototype)
+  //agente.agenciaOrigen = agencia;
   agencia.setId(agente)
   agencia.Programa.bind(agente)()
 };
@@ -231,9 +237,9 @@ function testEjercicio4(res) {
 // Test Ejercicio 5
 function testEjercicio5(res) {
   res.write("\n|| Crear un agente de cada agencia y mandarlo a espiar ||\n");
-	control = new Agencia(function() { }, "idC", "nC");
-	kaos = new Agencia(function() { }, "idK", "nK");
-	let agenteK = nuevoAgente(kaos);
+  control = new Agencia(function() { }, "idC", "nC");
+  kaos = new Agencia(function() { }, "idK", "nK");
+  let agenteK = nuevoAgente(kaos);
   let agenteC = {};
   enrolar(agenteC, control);
   agenteC.espiar(kaos);
@@ -254,8 +260,84 @@ function testEjercicio5(res) {
   res.write("El espía de Kaos" + si_o_no(K_conoce_nC) + "sabe responder nC", K_conoce_nC);
   res.write("El espía de Kaos" + si_o_no(K_conoce_idK) + "sabe responder idK", K_conoce_idK);
   res.write("El espía de Kaos" + si_o_no(K_conoce_nK) + "sabe responder nK", !K_conoce_nK);
-  // Completar
 
+  smithsAgencia = new Agencia(function() { }, "idS", "nS");
+  let agenteS = nuevoAgente(smithsAgencia);
+  let agenteS_2 = {};
+  enrolar(agenteS_2, smithsAgencia);
+  let S_conoce_idS = "idS" in agenteS;
+  let S_conoce_nS = "nS" in agenteS;
+  res.write("El agente de la agencia de Smith" + si_o_no(S_conoce_nS) + "sabe responder nS", S_conoce_nS);
+  res.write("El agente de la agencia de Smith" + si_o_no(S_conoce_idS) + "sabe responder idS", S_conoce_idS);
+
+  let S_conoce_idC = "idC" in agenteS;
+  let S_conoce_nC = "nC" in agenteS;
+  let S_id = agenteS[smithsAgencia.idLabel] == 1;
+  let S_n = smithsAgencia.Programa.prototype[smithsAgencia.nLabel] == 2;
+  
+  res.write("El agente de la agencia de Smith " + si_o_no(S_id) + "tiene id=1", S_id);
+  res.write("La agencia Smith " + si_o_no(S_id) + "tiene tiene 2 agentes", S_n);
+  res.write("El agente de la agencia de Smith" + si_o_no(S_conoce_idC) + "sabe responder idC", !S_conoce_idC);
+  res.write("El agente de la agencia de Smith" + si_o_no(S_conoce_nC) + "sabe responder nC", !S_conoce_nC);
+  	
+  
+  let nC = control.Programa.prototype[control.nLabel] == 1;
+  res.write("***La agencia Control" + si_o_no(nC) + "tiene 1 agente***", nC);
+  
+  res.write("\n|| El agente Smith se infiltró en Control!||\n");
+  agenteS.espiar(control);
+  S_conoce_idC = "idC" in agenteS;
+  S_conoce_nC = "nC" in agenteS;
+  S_conoce_idS = "idS" in agenteS;
+  S_conoce_nS = "nS" in agenteS;
+  S_id = agenteS[smithsAgencia.idLabel] == 1;
+  S_n = smithsAgencia.Programa.prototype[smithsAgencia.nLabel] == 2;
+  nC = control.Programa.prototype[control.nLabel] == 1;
+
+  res.write("El agente smith que espía Control" + si_o_no(S_conoce_idC) + "sabe responder idC", !S_conoce_idC);
+  res.write("El agente smith que espía Control" + si_o_no(S_conoce_idS) + "sabe responder idS", S_conoce_idS);
+  res.write("El agente smith que espía Control" + si_o_no(S_conoce_nC) + "sabe responder nC", S_conoce_nC);
+  res.write("El agente smith que espía Control" + si_o_no(S_conoce_nS) + "sabe responder nS", !S_conoce_nS);
+  res.write("El agente smith que espía Control" + si_o_no(S_id) + "sigue teniendo id 1", S_id);
+  res.write("La agencia Smith " + si_o_no(S_id) + "sigue teniendo 2 agentes", S_n);
+  res.write("***La agencia Control" + si_o_no(nC) + "sigue teniendo 1 agente***", nC);
+  
+  res.write("\n|| El agente Smith deja de espiar la agencia Control!||\n");
+  agenteS.dejarDeEspiar(control);
+  S_conoce_idS = "idS" in agenteS;
+  S_conoce_nS = "nS" in agenteS;
+  S_conoce_idC = "idC" in agenteS;
+  S_conoce_nC = "nC" in agenteS;
+  S_n = smithsAgencia.Programa.prototype[smithsAgencia.nLabel] == 2;
+  S_id = agenteS[smithsAgencia.idLabel] == 1;
+  nC = control.Programa.prototype[control.nLabel] == 1;
+  res.write("El agente smith que espiaba Control" + si_o_no(S_conoce_idC) + "sabe responder idC", !S_conoce_idC);
+  res.write("El agente smith que espiaba Control" + si_o_no(S_conoce_idS) + "sabe responder idS", S_conoce_idS);
+  res.write("El agente smith que espiaba Control" + si_o_no(S_conoce_nC) + "sabe responder nC", !S_conoce_nC);
+  res.write("El agente smith que espiaba Control" + si_o_no(S_conoce_nS) + "sabe responder nS", S_conoce_nS);
+  res.write("El agente smith que espiaba Control" + si_o_no(S_id) + "sigue teniendo id 1", S_id);
+  res.write("La agencia Smith " + si_o_no(S_id) + "sigue teniendo 2 agentes", S_n);
+  res.write("***La agencia Control" + si_o_no(nC) + "sigue teniendo 1 agente***", nC);
+  
+  res.write("\n|| El otro agente Smith espia la agencia Smith!||\n");
+  agenteS_2.espiar(smithsAgencia);
+  let S2_conoce_idS = "idS" in agenteS_2;
+  let S2_conoce_nS = "nS" in agenteS_2;
+  let S2_id = agenteS_2[smithsAgencia.idLabel] == 2;
+  
+  res.write("El otro agente de la agencia de Smith" + si_o_no(S2_conoce_nS) + "sabe responder nS", S2_conoce_nS);
+  res.write("El otro agente de la agencia de Smith" + si_o_no(S2_conoce_idS) + "sabe responder idS", S2_conoce_idS);
+  res.write("El otro agente de la agencia de Smith " + si_o_no(S2_id) + "tiene id=2", S2_id);
+  
+  res.write("\n|| Ahora deja de espiar su propia agencia Smith!||\n");
+  agenteS_2.dejarDeEspiar(smithsAgencia);
+  S2_conoce_idS = "idS" in agenteS_2;
+  S2_conoce_nS = "nS" in agenteS_2;
+  S2_id = agenteS_2[smithsAgencia.idLabel] == 2;
+
+  res.write("El otro agente de la agencia de Smith" + si_o_no(S2_conoce_nS) + "sabe responder nS", S2_conoce_nS);
+  res.write("El otro agente de la agencia de Smith" + si_o_no(S2_conoce_idS) + "sabe responder idS", S2_conoce_idS);
+  res.write("El otro agente de la agencia de Smith " + si_o_no(S2_id) + "tiene id=2", S2_id);
 }
 
 // Test Ejercicio 6
@@ -263,7 +345,7 @@ function testEjercicio6(res) {
   let fConstructora = function() {
     this.sombrero = true;
   };
-  let owca = new Agencia(fConstructora);
+  let owca = new Agencia(fConstructora, "idOw", "nOw"); //TODO: consultar: está bien que le agreguemos idOw y nOw?
   let sacarseElSombrero = function() {
     this.sombrero = false;
   }
@@ -288,7 +370,42 @@ function testEjercicio6(res) {
   let camaleonRespondeQOnda = camaleon.repetir('q onda?') == 'q onda?';
   res.write(`El agente Camaleón ${si_o_no(camaleonEsRojo)} es de color rojo`, camaleonEsRojo);
   res.write(`El agente Camaleón ${si_o_no(camaleonRespondeQOnda)} responde 'q onda?' si le piden repetir 'q onda?'`, camaleonRespondeQOnda);
-  // Completar
-
+  
+  N_ow = owca.Programa.prototype[owca.nLabel] == 2;
+  res.write(`La agencia Owca ${si_o_no(N_ow)} tiene 2 agentes`, N_ow);
+  camaleon_conoce_idOw = "idOw" in camaleon;
+  camaleon_conoce_nOw = "nOw" in camaleon;
+  res.write("El agente camaleon" + si_o_no(camaleon_conoce_idOw) + "conoce idOw", camaleon_conoce_idOw);
+  res.write("El agente camaleon" + si_o_no(camaleon_conoce_nOw) + "conoce nOw", camaleon_conoce_nOw);
+  
+  res.write("\n|| El agente Camaleón se infiltra en Kaos||\n");
+  kaos = new Agencia(function() { }, "idK", "nK");
+  let agenteK = nuevoAgente(kaos);
+  camaleon.espiar(kaos);
+  
+  camaleon_conoce_idK = "idK" in camaleon;
+  camaleon_conoce_nK = "nK" in camaleon;
+  camaleon_conoce_idOw = "idOw" in camaleon;
+  camaleon_conoce_nOw = "nOw" in camaleon;
+  res.write("El espía de Kaos (camaleon)" + si_o_no(camaleon_conoce_idK) + "sabe responder idK", !camaleon_conoce_idK);
+  res.write("El espía de Kaos (camaleon)" + si_o_no(camaleon_conoce_nK) + "sabe responder nK", camaleon_conoce_nK);
+  res.write("El agente camaleon" + si_o_no(camaleon_conoce_idOw) + "conoce idOw", camaleon_conoce_idOw);
+  res.write("El agente camaleon" + si_o_no(camaleon_conoce_nOw) + "conoce nOw", !camaleon_conoce_nOw);
+  
+  
+  res.write("\n|| El agente Camaleón deja de espiar Kaos||\n");
+  camaleon.dejarDeEspiar(kaos);
+  
+  camaleon_conoce_idK = "idK" in camaleon;
+  camaleon_conoce_nK = "nK" in camaleon;
+  camaleon_conoce_idOw = "idOw" in camaleon;
+  camaleon_conoce_nOw = "nOw" in camaleon;
+  N_ow = owca.Programa.prototype[owca.nLabel] == 2;
+  res.write(`La agencia Owca ${si_o_no(N_ow)} sigue teniendo 2 agentes`, N_ow);
+  res.write("El agente camaleon" + si_o_no(camaleon_conoce_idK) + "sabe responder idK", !camaleon_conoce_idK);
+  res.write("El agente camaleon" + si_o_no(camaleon_conoce_nK) + "sabe responder nK", !camaleon_conoce_nK);
+  res.write("El agente camaleon" + si_o_no(camaleon_conoce_idOw) + "conoce idOw", camaleon_conoce_idOw);
+  res.write("El agente camaleon" + si_o_no(camaleon_conoce_nOw) + "conoce nOw", camaleon_conoce_nOw);
+  
 }
 
