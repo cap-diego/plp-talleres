@@ -1,3 +1,62 @@
+//--------------------ejercicio 1, 2, 3-----------------------------------------------------
+
+// AgenteDeControl = function (){
+//   this.agencia = "Control";
+// };
+//
+// smart = new AgenteDeControl();
+//
+// Agencia = function (agentes){
+//   this.programa = agentes;
+// };
+//
+// control = new Agencia(AgenteDeControl);
+//
+// nuevoAgente = function (agencia){
+//   return new agencia.programa();
+// };
+//
+// enrolar = function (agente, agencia){
+//   Object.setPrototypeOf(agente,agencia.programa.prototype)
+//   agencia.programa.bind(agente)()
+// };
+
+//------------------------------------------------------------------------------------------
+//-----------------------------ejercicio 4--------------------------------------------------
+//AgenteDeControl = function (){
+//  this.agencia = "Control";
+//};
+
+//smart = new AgenteDeControl();
+
+//Agencia = function (agentes, idLabel, nLabel){
+//  this.programa = agentes;
+//  this.idLabel = idLabel;
+//  this.nLabel = nLabel;
+//  agentes.prototype[this.nLabel] = 0
+//};
+
+//control = new Agencia(AgenteDeControl,"idC","nC");
+
+//Agencia.prototype.setId = function (agente){
+//  this.programa.prototype[this.nLabel] = this.programa.prototype[this.nLabel] +1;
+//  agente[this.idLabel] = this.programa.prototype[this.nLabel];
+//}
+
+//nuevoAgente = function (agencia){
+//  let agente = new agencia.programa();
+//  agencia.setId(agente)
+//  return agente
+//};
+
+//enrolar = function (agente, agencia){
+//  Object.setPrototypeOf(agente,agencia.programa.prototype)
+//  agencia.setId(agente)
+//  agencia.programa.bind(agente)()
+//};
+
+//------------------------------Ejercicios 5 a 6--------------------------------------------------
+
 AgenteDeControl = function (){
   this.agencia = "Control";
 };
@@ -82,13 +141,13 @@ function testEjercicio1(res) {
   res.write(`La Agencia del agente Smart ${si_o_no(suAgenciaEsControl)} es Control`, suAgenciaEsControl);
 
   res.write("\n|| Crear al agente Smith ||\n");
-  smith = new AgenteDeControl();
+  let smith = new AgenteDeControl();
   creadoCorrectamente = Object.getPrototypeOf(smith) === Object.getPrototypeOf(smart);
   res.write(`Agente Smith creado de forma ${creadoCorrectamente ? '' : 'in'}correcta`, creadoCorrectamente);
   conoceSuAgencia = "agencia" in smith;
   res.write(`Agente Smith ${si_o_no(conoceSuAgencia)} conoce su agencia`, conoceSuAgencia);
   let suAgenciaEsSmith = smith.agencia === "Smith";
-  res.write(`La Agencia del agente Smith ${si_o_no(suAgenciaEsSmith)} es Smith`, !suAgenciaEsSmith);
+  res.write(`La Agencia del agente Smith ${si_o_no(suAgenciaEsSmith)} no es la Agencia Smith`, !suAgenciaEsSmith);
 }
 
 // Test Ejercicio 2
@@ -101,9 +160,10 @@ function testEjercicio2(res) {
   let tieneDefinidoElProgramaDeEntrenamiento = Object.values(kaos).includes(AgenteDeKaos);
   res.write(`La agencia ${si_o_no(tieneDefinidoElProgramaDeEntrenamiento)} tiene definido un programa de entrenamiento`, tieneDefinidoElProgramaDeEntrenamiento);
 
-  smith = Object.create(kaos)
+  res.write("\n|| Crear al agente Smith, por medio del agente kaos ||\n");
+  let smith = Object.create(kaos)
   tieneDefinidoElProgramaDeEntrenamiento = Object.values(Object.getPrototypeOf(smith)).includes(AgenteDeKaos);
-  res.write(`La agencia ${si_o_no(tieneDefinidoElProgramaDeEntrenamiento)} tiene definido un programa de entrenamiento`, tieneDefinidoElProgramaDeEntrenamiento);
+  res.write(`La agencia ${si_o_no(tieneDefinidoElProgramaDeEntrenamiento)} tiene definido un programa de entrenamiento, el cual lo va a buscar por medio del agente smith`, tieneDefinidoElProgramaDeEntrenamiento);
 
 }
 
@@ -139,6 +199,34 @@ function testEjercicio3(res) {
   res.write(`El agente enrolado ${si_o_no(agenciaRegistraEnrolamiento)} pasó por el programa de entrenamiento`, agenciaRegistraEnrolamiento);
   // Completar
 
+  res.write("\n|| Creamos un Agente Bombero el cual lo enrolamos en la agencia de bomberos alpha y despues es trasladado a beta ||\n");
+  let fBomberosAlpha = function() {
+    this.saludo = "Somos del escuadron alpha"
+  };
+  fBomberosAlpha.prototype.totalSedes = 1;
+  let agenciDeBomberosAlpha = new Agencia(fBomberosAlpha);
+  let bombero = {}
+  let saberLaCantidadDeSedes = bombero.totalSedes === 1;
+  res.write(`El bombero ${si_o_no(saberLaCantidadDeSedes)} no conoce la cantidad de sedes de los bomberos alpha`, !saberLaCantidadDeSedes);
+
+  enrolar(bombero, agenciDeBomberosAlpha);
+  saberLaCantidadDeSedes = bombero.totalSedes == 1;
+  res.write(`El bombero ${si_o_no(saberLaCantidadDeSedes)} conoce la cantidad de sedes de los bomberos alpha, por medio de su prototipo`, saberLaCantidadDeSedes);
+  let sabeElSaludoAlpha = bombero.saludo === "Somos del escuadron alpha";
+  res.write(`El bombero ${si_o_no(sabeElSaludoAlpha)} conoce el saludo de los bomberos alpha`, sabeElSaludoAlpha);
+
+  let fBomberosBeta = function() {
+    this.saludo = "Somos del escuadron beta"
+  };
+  fBomberosBeta.prototype.totalSedes = 2;
+  let agenciDeBomberosBeta = new Agencia(fBomberosBeta);
+  enrolar(bombero, agenciDeBomberosBeta);
+  saberLaCantidadDeSedes = bombero.totalSedes == 2;
+  res.write(`El bombero ${si_o_no(saberLaCantidadDeSedes)} conoce la cantidad de sedes de los bomberos beta, por medio de su prototipo`, saberLaCantidadDeSedes);
+  let sabeElSaludoBeta = bombero.saludo === "Somos del escuadron beta";
+  res.write(`El bombero ${si_o_no(sabeElSaludoBeta)} conoce el saludo de los bomberos beta`, sabeElSaludoBeta);
+  sabeElSaludoAlpha = bombero.saludo === "Somos del escuadron alpha";
+  res.write(`El bombero ${si_o_no(sabeElSaludoAlpha)} ya no conoce el saludo de los bomberos alpha`, !sabeElSaludoAlpha);
 }
 
 // Test Ejercicio 4
@@ -165,8 +253,46 @@ function testEjercicio4(res) {
   res.write("El agente de Kaos" + si_o_no(K_conoce_nC) + "sabe responder nC", !K_conoce_nC);
   res.write("El agente de Kaos" + si_o_no(K_conoce_idK) + "sabe responder idK", K_conoce_idK);
   res.write("El agente de Kaos" + si_o_no(K_conoce_nK) + "sabe responder nK", K_conoce_nK);
+
   // Completar
 
+  res.write("\n|| Creamos la agencia de policia y de la Cia, donde agregamos un agente a cada agencia ||\n");
+  let agenciaPolicia = new Agencia(function() { this.orden = "Arrestar" }, "idP", "nP");
+  let agenciaCia = new Agencia(function() { this.orden = "Investigar" }, "idCIA", "nCIA");
+  let teniente =nuevoAgente(agenciaPolicia);
+  let policiaCivil = {}
+  let general = nuevoAgente(agenciaCia);
+  let agenteEspecial = {}
+  enrolar(agenteEspecial, agenciaCia);
+  let supervisorEspecial = nuevoAgente(agenciaCia);
+  enrolar(policiaCivil, agenciaPolicia);
+
+  let policia_conoce_su_idP = "idP" in policiaCivil;
+  let policia_conoce_su_np = "nP" in policiaCivil;
+  let agente_especial_conoce_su_idp = "idP" in agenteEspecial;
+  let agente_especial_conoce_su_np = "inP" in agenteEspecial;
+  let agente_especial_conoce_su_idCIA = "idCIA" in agenteEspecial;
+  let agente_especial_conoce_su_nCIA = "nCIA" in agenteEspecial;
+  let policia_conoce_su_idCIA = "idCIA" in policiaCivil;
+  let policia_conoce_su_nCIA = "nCIA" in policiaCivil;
+  let policia_conoce_valor_idP = policiaCivil.idP === 2;
+  let policia_conoce_valor_nP = policiaCivil.nP === 2;
+  let agente_especial_conoce_valor_idCIA = agenteEspecial.idCIA === 2;
+  let agente_especial_conoce_valor_nCIA  = agenteEspecial.nCIA === 3;
+
+  res.write("El agente de Policia" + si_o_no(policia_conoce_su_idP) + "sabe responder idP", policia_conoce_su_idP);
+  res.write("El agente de Policia" + si_o_no(policia_conoce_valor_idP) + "conoce el valor de su idP", policia_conoce_valor_idP);
+  res.write("El agente de Policia" + si_o_no(policia_conoce_su_np) + "sabe responder nP", policia_conoce_su_np);
+  res.write("El agente de Policia" + si_o_no(policia_conoce_valor_nP) + "conoce el valor de su nP", policia_conoce_valor_nP);
+  res.write("El agente de Policia" + si_o_no(policia_conoce_su_idCIA) + "sabe responder idCIA", !policia_conoce_su_idCIA);
+  res.write("El agente de Policia" + si_o_no(policia_conoce_su_nCIA) + "sabe responder nCIA", !policia_conoce_su_nCIA);
+
+  res.write("El agente de Especial de la CIA" + si_o_no(agente_especial_conoce_su_idCIA) + "sabe responder idCIA", agente_especial_conoce_su_idCIA);
+  res.write("El agente de Especial de la CIA" + si_o_no(agente_especial_conoce_valor_idCIA) + "conoce el valor de su idCIA", agente_especial_conoce_valor_idCIA);
+  res.write("El agente de Especial de la CIA" + si_o_no(agente_especial_conoce_su_nCIA) + "sabe responder nCIA", agente_especial_conoce_su_nCIA);
+  res.write("El agente de Especial de la CIA" + si_o_no(agente_especial_conoce_valor_nCIA) + "conoce el valor de su nCIA", agente_especial_conoce_valor_nCIA);
+  res.write("El agente de Especial de la CIA" + si_o_no(agente_especial_conoce_su_idp) + "sabe responder idP", !agente_especial_conoce_su_idp);
+  res.write("El agente de Especial de la CIA" + si_o_no(policia_conoce_su_nCIA) + "sabe responder nP", !policia_conoce_su_nCIA);
 }
 
 // Test Ejercicio 5
