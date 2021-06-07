@@ -61,11 +61,6 @@ AgenteDeControl = function (){
   this.agencia = "Control";
 };
 
-
-AgenteDeKaos = function (){
-  this.agencia = "Kaos";
-};
-
 smart = new AgenteDeControl();
 
 Agencia = function (agenteFn, idLabel, nLabel) {
@@ -82,6 +77,8 @@ Agencia = function (agenteFn, idLabel, nLabel) {
     Object.setPrototypeOf(this, this.agenciaOrigen.Programa.prototype)
   }
 };
+
+control = new Agencia(AgenteDeControl,"idC","nC");
 
 Agencia.prototype.setId = function (agente) {
   this.Programa.prototype[this.nLabel] += 1;
@@ -142,8 +139,15 @@ function testEjercicio1(res) {
   res.write(`Agente Smart ${si_o_no(conoceSuAgencia)} conoce su agencia`, conoceSuAgencia);
   let suAgenciaEsControl = smart.agencia === "Control";
   res.write(`La Agencia del agente Smart ${si_o_no(suAgenciaEsControl)} es Control`, suAgenciaEsControl);
-  // Completar
 
+  res.write("\n|| Crear al agente Smith ||\n");
+  smith = new AgenteDeControl();
+  creadoCorrectamente = Object.getPrototypeOf(smith) === Object.getPrototypeOf(smart);
+  res.write(`Agente Smith creado de forma ${creadoCorrectamente ? '' : 'in'}correcta`, creadoCorrectamente);
+  conoceSuAgencia = "agencia" in smith;
+  res.write(`Agente Smith ${si_o_no(conoceSuAgencia)} conoce su agencia`, conoceSuAgencia);
+  let suAgenciaEsSmith = smith.agencia === "Smith";
+  res.write(`La Agencia del agente Smith ${si_o_no(suAgenciaEsSmith)} es Smith`, !suAgenciaEsSmith);
 }
 
 // Test Ejercicio 2
@@ -155,7 +159,10 @@ function testEjercicio2(res) {
   kaos = new Agencia(AgenteDeKaos);
   let tieneDefinidoElProgramaDeEntrenamiento = Object.values(kaos).includes(AgenteDeKaos);
   res.write(`La agencia ${si_o_no(tieneDefinidoElProgramaDeEntrenamiento)} tiene definido un programa de entrenamiento`, tieneDefinidoElProgramaDeEntrenamiento);
-  // Completar
+
+  smith = Object.create(kaos)
+  tieneDefinidoElProgramaDeEntrenamiento = Object.values(Object.getPrototypeOf(smith)).includes(AgenteDeKaos);
+  res.write(`La agencia ${si_o_no(tieneDefinidoElProgramaDeEntrenamiento)} tiene definido un programa de entrenamiento`, tieneDefinidoElProgramaDeEntrenamiento);
 
 }
 
@@ -284,3 +291,4 @@ function testEjercicio6(res) {
   // Completar
 
 }
+
