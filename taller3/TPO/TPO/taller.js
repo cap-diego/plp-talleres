@@ -303,7 +303,7 @@ function testEjercicio5(res) {
   res.write("***La agencia Control" + si_o_no(nC) + "sigue teniendo 1 agente***", nC);
   
   res.write("\n|| El agente Smith deja de espiar la agencia Control!||\n");
-  agenteS.dejarDeEspiar(control);
+  agenteS.dejarDeEspiar();
   S_conoce_idS = "idS" in agenteS;
   S_conoce_nS = "nS" in agenteS;
   S_conoce_idC = "idC" in agenteS;
@@ -330,7 +330,7 @@ function testEjercicio5(res) {
   res.write("El otro agente de la agencia de Smith " + si_o_no(S2_id) + "tiene id=2", S2_id);
   
   res.write("\n|| Ahora deja de espiar su propia agencia Smith!||\n");
-  agenteS_2.dejarDeEspiar(smithsAgencia);
+  agenteS_2.dejarDeEspiar();
   S2_conoce_idS = "idS" in agenteS_2;
   S2_conoce_nS = "nS" in agenteS_2;
   S2_id = agenteS_2[smithsAgencia.idLabel] == 2;
@@ -394,7 +394,7 @@ function testEjercicio6(res) {
   
   
   res.write("\n|| El agente Camaleón deja de espiar Kaos||\n");
-  camaleon.dejarDeEspiar(kaos);
+  camaleon.dejarDeEspiar();
   
   camaleon_conoce_idK = "idK" in camaleon;
   camaleon_conoce_nK = "nK" in camaleon;
@@ -406,6 +406,29 @@ function testEjercicio6(res) {
   res.write("El agente camaleon" + si_o_no(camaleon_conoce_nK) + "sabe responder nK", !camaleon_conoce_nK);
   res.write("El agente camaleon" + si_o_no(camaleon_conoce_idOw) + "conoce idOw", camaleon_conoce_idOw);
   res.write("El agente camaleon" + si_o_no(camaleon_conoce_nOw) + "conoce nOw", camaleon_conoce_nOw);
+  
+  
+  res.write("\n|| Crear al agente Pitonisa ||\n");
+  let futuroAgencia = new Agencia(function() { }, "idO", "nO");
+  let skillFn = {verFuturo: function() {return true;}};
+  let pitonisa = new agenteEspecial(futuroAgencia, camuflar);
+  pitonisa.camuflar(skillFn);
+  let agentePuedeVerElFuturo = 'verFuturo' in pitonisa;
+  res.write(`El agente Pitonisa ${si_o_no(agentePuedeVerElFuturo)} sabe ver el futuro`, agentePuedeVerElFuturo);
+  
+  res.write("\n|| Skill editado fuera del agente||\n");
+  skillFn.verFuturo = function(b) {return b};
+  agentePuedeVerElFuturo = 'verFuturo' in pitonisa;
+  res.write(`El agente Pitonisa ${si_o_no(agentePuedeVerElFuturo)} sigue pudiendo ver el futuro`, agentePuedeVerElFuturo);
+  
+  res.write("\n|| Agrego skills a Pitonisa sin cambiar ver el futuro||\n");
+  pitonisa.camuflar({
+    laCucharaSeDobla: function() {return false;}
+  });
+  agenteSabeSiSeDoblaLaCuchara = 'laCucharaSeDobla' in pitonisa;
+  agentePuedeVerElFuturo = 'verFuturo' in pitonisa;
+  res.write(`El agente Pitonisa ${si_o_no(agenteSabeSiSeDoblaLaCuchara)} sabe si se dobla la cuchara`, agenteSabeSiSeDoblaLaCuchara);  
+  res.write(`El agente Pitonisa ${si_o_no(agentePuedeVerElFuturo)} sigue pudiendo ver el futuro`, agentePuedeVerElFuturo);
   
 }
 
