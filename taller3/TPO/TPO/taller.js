@@ -1,62 +1,3 @@
-//--------------------ejercicio 1, 2, 3-----------------------------------------------------
-
-// AgenteDeControl = function (){
-//   this.agencia = "Control";
-// };
-//
-// smart = new AgenteDeControl();
-//
-// Agencia = function (agentes){
-//   this.programa = agentes;
-// };
-//
-// control = new Agencia(AgenteDeControl);
-//
-// nuevoAgente = function (agencia){
-//   return new agencia.programa();
-// };
-//
-// enrolar = function (agente, agencia){
-//   Object.setPrototypeOf(agente,agencia.programa.prototype)
-//   agencia.programa.bind(agente)()
-// };
-
-//------------------------------------------------------------------------------------------
-//-----------------------------ejercicio 4--------------------------------------------------
-//AgenteDeControl = function (){
-//  this.agencia = "Control";
-//};
-
-//smart = new AgenteDeControl();
-
-//Agencia = function (agentes, idLabel, nLabel){
-//  this.programa = agentes;
-//  this.idLabel = idLabel;
-//  this.nLabel = nLabel;
-//  agentes.prototype[this.nLabel] = 0
-//};
-
-//control = new Agencia(AgenteDeControl,"idC","nC");
-
-//Agencia.prototype.setId = function (agente){
-//  this.programa.prototype[this.nLabel] = this.programa.prototype[this.nLabel] +1;
-//  agente[this.idLabel] = this.programa.prototype[this.nLabel];
-//}
-
-//nuevoAgente = function (agencia){
-//  let agente = new agencia.programa();
-//  agencia.setId(agente)
-//  return agente
-//};
-
-//enrolar = function (agente, agencia){
-//  Object.setPrototypeOf(agente,agencia.programa.prototype)
-//  agencia.setId(agente)
-//  agencia.programa.bind(agente)()
-//};
-
-//------------------------------Ejercicios 5 a 6--------------------------------------------------
-
 AgenteDeControl = function (){
   this.agencia = "Control";
 };
@@ -197,7 +138,7 @@ function testEjercicio3(res) {
   enrolar(miniEspia3, cia);
   agenciaRegistraEnrolamiento = agentes == 1;
   res.write(`El agente enrolado ${si_o_no(agenciaRegistraEnrolamiento)} pasó por el programa de entrenamiento`, agenciaRegistraEnrolamiento);
-  // Completar
+
 
   res.write("\n|| Creamos un Agente Bombero el cual lo enrolamos en la agencia de bomberos alpha y despues es trasladado a beta ||\n");
   let fBomberosAlpha = function() {
@@ -254,7 +195,7 @@ function testEjercicio4(res) {
   res.write("El agente de Kaos" + si_o_no(K_conoce_idK) + "sabe responder idK", K_conoce_idK);
   res.write("El agente de Kaos" + si_o_no(K_conoce_nK) + "sabe responder nK", K_conoce_nK);
 
-  // Completar
+
 
   res.write("\n|| Creamos la agencia de policia y de la Cia, donde agregamos un agente a cada agencia ||\n");
   let agenciaPolicia = new Agencia(function() { this.orden = "Arrestar" }, "idP", "nP");
