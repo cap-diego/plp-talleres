@@ -1,6 +1,14 @@
 AgenteDeControl = function (){
-  this.agencia = "Control";
+	this.agencia = "Control";
 };
+
+setAgenteID = function(agente, label, id) {
+	agente[label] = id
+}
+
+actualizarCantAgentes = function(agencia, n) {
+	agencia.Programa.prototype[agencia.nLabel] += n
+}
 
 smart = new AgenteDeControl();
 
@@ -11,32 +19,37 @@ Agencia = function (agenteFn, idLabel, nLabel) {
   agenteFn.prototype[this.nLabel] = 0;
 
   agenteFn.prototype.espiar = function(agencia) {
+	agencia.Programa.bind(this)()
     Object.setPrototypeOf(this, agencia.Programa.prototype)
+	actualizarCantAgentes(agencia, 1)
   }
   
-  agenteFn.prototype.dejarDeEspiar = function() {
-    Object.setPrototypeOf(this, this.agenciaOrigen.Programa.prototype)
-  }
 };
 
 control = new Agencia(AgenteDeControl,"idC","nC");
 
-Agencia.prototype.setId = function (agente) {
-  this.Programa.prototype[this.nLabel] += 1;
-  agente[this.idLabel] = this.Programa.prototype[this.nLabel];
-  agente.agenciaOrigen = this;//Necesario para cuando se espía otra agencia
-}
-
 nuevoAgente = function (agencia) {
-  let agente = new agencia.Programa(agencia);
-  agencia.setId(agente)
-  return agente
+	let agente = new agencia.Programa(agencia);
+	actualizarCantAgentes(agencia, 1)
+	setAgenteID(agente, agencia.idLabel, agencia.Programa.prototype[agencia.nLabel])
+
+	agente.dejarDeEspiar = function() {
+		Object.setPrototypeOf(this, agencia.Programa.prototype)
+	}
+
+	return agente
 };
 
 enrolar = function (agente, agencia) {
-  Object.setPrototypeOf(agente, agencia.Programa.prototype)
-  agencia.setId(agente)
-  agencia.Programa.bind(agente)()
+	Object.setPrototypeOf(agente, agencia.Programa.prototype)
+	actualizarCantAgentes(agencia, 1)
+	setAgenteID(agente, agencia.idLabel, agencia.Programa.prototype[agencia.nLabel])
+	agencia.Programa.bind(agente)()
+
+	agente.dejarDeEspiar = function() {
+		Object.setPrototypeOf(this, agencia.Programa.prototype)
+	}
+
 };
 
 agenteEspecial = function(agencia, skillFn) {
@@ -282,9 +295,8 @@ function testEjercicio5(res) {
   res.write("El agente de la agencia de Smith" + si_o_no(S_conoce_idC) + "sabe responder idC", !S_conoce_idC);
   res.write("El agente de la agencia de Smith" + si_o_no(S_conoce_nC) + "sabe responder nC", !S_conoce_nC);
   	
-  
-  let nC = control.Programa.prototype[control.nLabel] == 1;
-  res.write("***La agencia Control" + si_o_no(nC) + "tiene 1 agente***", nC);
+  let nC = control.Programa.prototype[control.nLabel] == 2;
+  res.write("***La agencia Control" + si_o_no(nC) + "tiene 2 agentes***", nC);
   
   res.write("\n|| El agente Smith se infiltró en Control!||\n");
   agenteS.espiar(control);
@@ -294,7 +306,7 @@ function testEjercicio5(res) {
   S_conoce_nS = "nS" in agenteS;
   S_id = agenteS[smithsAgencia.idLabel] == 1;
   S_n = smithsAgencia.Programa.prototype[smithsAgencia.nLabel] == 2;
-  nC = control.Programa.prototype[control.nLabel] == 1;
+  nC = control.Programa.prototype[control.nLabel] == 3;
 
   res.write("El agente smith que espía Control" + si_o_no(S_conoce_idC) + "sabe responder idC", !S_conoce_idC);
   res.write("El agente smith que espía Control" + si_o_no(S_conoce_idS) + "sabe responder idS", S_conoce_idS);
@@ -302,7 +314,7 @@ function testEjercicio5(res) {
   res.write("El agente smith que espía Control" + si_o_no(S_conoce_nS) + "sabe responder nS", !S_conoce_nS);
   res.write("El agente smith que espía Control" + si_o_no(S_id) + "sigue teniendo id 1", S_id);
   res.write("La agencia Smith " + si_o_no(S_id) + "sigue teniendo 2 agentes", S_n);
-  res.write("***La agencia Control" + si_o_no(nC) + "sigue teniendo 1 agente***", nC);
+  res.write("***La agencia Control" + si_o_no(nC) + "tiene 3 agentes***", nC);
   
   res.write("\n|| El agente Smith deja de espiar la agencia Control!||\n");
   agenteS.dejarDeEspiar();
@@ -312,14 +324,14 @@ function testEjercicio5(res) {
   S_conoce_nC = "nC" in agenteS;
   S_n = smithsAgencia.Programa.prototype[smithsAgencia.nLabel] == 2;
   S_id = agenteS[smithsAgencia.idLabel] == 1;
-  nC = control.Programa.prototype[control.nLabel] == 1;
+  nC = control.Programa.prototype[control.nLabel] == 3;
   res.write("El agente smith que espiaba Control" + si_o_no(S_conoce_idC) + "sabe responder idC", !S_conoce_idC);
   res.write("El agente smith que espiaba Control" + si_o_no(S_conoce_idS) + "sabe responder idS", S_conoce_idS);
   res.write("El agente smith que espiaba Control" + si_o_no(S_conoce_nC) + "sabe responder nC", !S_conoce_nC);
   res.write("El agente smith que espiaba Control" + si_o_no(S_conoce_nS) + "sabe responder nS", S_conoce_nS);
   res.write("El agente smith que espiaba Control" + si_o_no(S_id) + "sigue teniendo id 1", S_id);
   res.write("La agencia Smith " + si_o_no(S_id) + "sigue teniendo 2 agentes", S_n);
-  res.write("***La agencia Control" + si_o_no(nC) + "sigue teniendo 1 agente***", nC);
+  res.write("***La agencia Control" + si_o_no(nC) + "sigue teniendo 3 agente***", nC);
   
   res.write("\n|| El otro agente Smith espia la agencia Smith!||\n");
   agenteS_2.espiar(smithsAgencia);
@@ -372,7 +384,7 @@ function testEjercicio6(res) {
   let camaleonRespondeQOnda = camaleon.repetir('q onda?') == 'q onda?';
   res.write(`El agente Camaleón ${si_o_no(camaleonEsRojo)} es de color rojo`, camaleonEsRojo);
   res.write(`El agente Camaleón ${si_o_no(camaleonRespondeQOnda)} responde 'q onda?' si le piden repetir 'q onda?'`, camaleonRespondeQOnda);
-  
+
   N_ow = owca.Programa.prototype[owca.nLabel] == 2;
   res.write(`La agencia Owca ${si_o_no(N_ow)} tiene 2 agentes`, N_ow);
   camaleon_conoce_idOw = "idOw" in camaleon;
@@ -398,7 +410,7 @@ function testEjercicio6(res) {
   res.write("\n|| El agente Camaleón deja de espiar Kaos||\n");
   camaleon.dejarDeEspiar();
   
-  camaleon_conoce_idK = "idK" in camaleon;
+camaleon_conoce_idK = "idK" in camaleon;
   camaleon_conoce_nK = "nK" in camaleon;
   camaleon_conoce_idOw = "idOw" in camaleon;
   camaleon_conoce_nOw = "nOw" in camaleon;
@@ -431,5 +443,4 @@ function testEjercicio6(res) {
   agentePuedeVerElFuturo = 'verFuturo' in pitonisa;
   res.write(`El agente Pitonisa ${si_o_no(agenteSabeSiSeDoblaLaCuchara)} sabe si se dobla la cuchara`, agenteSabeSiSeDoblaLaCuchara);  
   res.write(`El agente Pitonisa ${si_o_no(agentePuedeVerElFuturo)} sigue pudiendo ver el futuro`, agentePuedeVerElFuturo);
-  
 }
