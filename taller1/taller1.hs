@@ -33,7 +33,7 @@ data Material a
 -- Ejercicio 1 a
 -- Dada una función a->b crear una Fabrica a b
 crearFabricaSimple :: (a -> b) -> (Fabrica a b)
-crearFabricaSimple f = map f
+crearFabricaSimple = map
 
 -- Ejercicio 1 b
 -- Usando la función crearFabricaSimple, definir las siguientes fábricas:
@@ -62,7 +62,7 @@ foldMaterial casoMPrima casoMezclar mat = case mat of
 -- Dada una función a->b crear una fábrica que procese materiales de tipo a y produzca
 -- materiales de tipo b aplicándole la función a cada caso base
 crearFabricaDeMaterial :: (a -> b) -> Fabrica (Material a) (Material b)
-crearFabricaDeMaterial f = crearFabricaSimple $ foldMaterial (\a -> MateriaPrima (f a)) (\rec1 porc rec2 -> Mezclar rec1 porc rec2)
+crearFabricaDeMaterial f = crearFabricaSimple $ foldMaterial (\a -> MateriaPrima (f a)) Mezclar
 
 -- Ejercicio 4 a
 -- Dadas dos fábricas simples, conectar la salida de la primera con la entrada de la segunda
@@ -74,8 +74,10 @@ secuenciar fab1 fab2 = fab2 . fab1
 -- De esta forma, dos fábricas simples se convierten en una sola que toma una lista de pares
 -- (cada par contiene una entrada de cada una de las fábricas originales) y devuelve
 -- una única lista que intercala los productos de ambas fábricas
-paralelizar :: Fabrica a b -> Fabrica c b -> [(a, c)] -> [b]
-paralelizar fab1 fab2 xs = entrelazar (foldr (\(x, y) rec -> (head (fab1 [x]), head (fab2 [y])) : rec) [] xs)
+paralelizar :: Fabrica a b -> Fabrica c b -> Fabrica (a, c) b
+paralelizar fab1 fab2 = (\xs -> entrelazar (zip (fab1 (map fst xs)) (fab2 (map snd xs))))
+-- paralelizar fab1 fab2 xs 
+-- entrelazar (foldr (\(x, y) rec -> (head (fab1 [x]), head (fab2 [y])) : rec) [] xs)
 
 entrelazar :: [(a, a)] -> [a]
 entrelazar = foldr (\(x, y) rec -> [x] ++ [y] ++ rec) []
@@ -123,7 +125,7 @@ paresEImpares = foldr (\x rec -> (x : snd rec, fst rec)) ([], [])
 -- Dada una función a->a->b crear una Fabrica a b
 -- Las fábricas complejas requieren dos unidades de material para producir cada unidad de producto
 crearFabricaCompleja :: (a -> a -> b) -> Fabrica a b
-crearFabricaCompleja f = \xs -> map (\(x, y) -> f x y) (emparejador xs)
+crearFabricaCompleja f = \xs -> map (uncurry f) (emparejador xs)
 
 -- Tests
 tests :: IO Counts
@@ -174,7 +176,9 @@ testsEj4 =
       [] ~=? secuenciar esPar neg [],
       [False, False, True, False, True, False] ~=? paralelizar neg esPar [(True, 1), (False, 3), (False, 1)],
       [] ~=? paralelizar neg esPar [],
-      [True, True] ~=? secuenciar neg neg [True, True]
+      [True, True] ~=? secuenciar neg neg [True, True],
+      --listas infinitas
+      [False,False,True,True,True] ~=? take 5 (paralelizar neg esPar [(mod x 5 == 0, x) | x <- [5..]])
     ]
 
 verdad = MateriaPrima True
