@@ -129,8 +129,60 @@ iEsimaInstruccion(E, Indice, Instruccion) :- is_list(E), iesimo(E, Indice, Instr
 % ejecutar el programa P con entradas Xs tras T pasos.
 % COMPLETAR
 
+% Xs ---> pasar a estado inicial [X1 = XS[1], X2 =XS[2],...]
+% En el test de snap estado resultante (1,[(2,10)]) no deberia ser : (1,[(2,10),(1,1)])
+snap(Xs, P, T, Di) :- snapAux(XS, P, 1, Di).
+
+
+
+snapAux(Estado, P, 1, Di) :- iEsimaInstruccion(P, 1, Ins), 
+					avanzarEstado(Ins, Estado, EstFinal),
+					avanzarIndice(Programa,_,Instruccion,Indice,I),
+					Di is (I,EstFinal).
+
+snapAux(Estado, P, T, Di) :- T > 1, K is T-1, snap(Estado, P, K, Di1), pi1(Di1, IndiceIns),
+					pi2(Di1, E), iEsimaInstruccion(P, IndiceIns, Ins),
+					avanzarEstado(Ins, E, EstFinal),
+					avanzarIndice(Programa,_,Ins,IndiceIns,I),
+					Di is (I,EstFinal).
+						
+
 % avanzarIndice(+P, +S, +Ins, +I0, -I)
-% avanzarIndice(Programa,Estado,Instruccion,Indice,I) :-
+avanzarIndice(Programa,Estado,Instruccion,Indice,I) :- 
+							codigoInstruccion(Instruccion,Codigo),
+							Codigo < 3, I is Indice+1.
+avanzarIndice(Programa,Estado,Instruccion,Indice,I) :-
+							codigoInstruccion(Instruccion,Codigo),
+							Codigo >= 3,
+							variableInstruccion(Instruccion,V),
+							V =:= 0,
+							I is Indice+1.
+avanzarIndice(Programa,Estado,Instruccion,Indice,I) :-
+							codigoInstruccion(Instruccion,Codigo),
+							Codigo >= 3,
+							variableInstruccion(Instruccion,V),
+							V \= 0,
+							Etiqueta is Codigo-2,
+							indiceDeEtiqueta(Programa,Etiqueta,I).
+							
+avanzarIndice(Programa,Estado,Instruccion,Indice,I) :-
+							codigoInstruccion(Instruccion,Codigo),
+							Codigo >= 3,
+							variableInstruccion(Instruccion,V),
+							V \= 0,
+							Etiqueta is Codigo-2,
+							not(indiceDeEtiqueta(Programa,Etiqueta,I)),
+							longitud(Programa, L),
+							I is L+1.
+							
+							
+indiceDeEtiqueta(Programa,Etiqueta,I) :- longitud(P, L), between(1,L,IndiceIns),
+										 iEsimaInstruccion(Programa, IndiceIns, Ins),
+										 etiquetaInstruccion(Ins, E1),
+										 E1 =:= Etiqueta,
+										 I is IndiceIns.
+
+							
 
 % avanzarEstado(+Ins, +S0, -S) 
 
@@ -147,7 +199,7 @@ armarEstado(EstIni,X,Res,EstFinal) :- delete(EstIni,(X,Z),L2),
 ejecutarCodigo(0,V,V).
 ejecutarCodigo(1,V,Z) :- Z is V+1 .
 ejecutarCodigo(2,V,Z) :- Z is V-1 .
-
+ejecutarCodigo(X,V,V) :- X > 2.
 
 
 %[(variable,valor),....]
@@ -200,7 +252,7 @@ testCodificacion(2) :- codificacionLista([1],2).
 % Agregar más tests
 
 cantidadTestsSnapYstp(2). % Actualizar con la cantidad de tests que entreguen
-testSnapYstp(1) :- stp([],[],1).
+% testSnapYstp(1) :- stp([],[],1).
 testSnapYstp(2) :- snap([10],[suma(0,1)],0,(1,[(2,10)])).
 % Agregar más tests
 
