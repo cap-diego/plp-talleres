@@ -135,16 +135,27 @@ snap(Xs, P, T, Di) :- snapAux(XS, P, 1, Di).
 
 
 
-snapAux(Estado, P, 1, Di) :- iEsimaInstruccion(P, 1, Ins), 
-					avanzarEstado(Ins, Estado, EstFinal),
-					avanzarIndice(Programa,_,Instruccion,Indice,I),
-					Di is (I,EstFinal).
+armarEstadoConEntradaXS([],[]).
+armarEstadoConEntradaXS(XS,Estado) :- length(XS,L), L > 0,
+									  reverse(XS,XS2), armarEstadoConEntradaXSReverse(XS2,Estado).
 
-snapAux(Estado, P, T, Di) :- T > 1, K is T-1, snap(Estado, P, K, Di1), pi1(Di1, IndiceIns),
-					pi2(Di1, E), iEsimaInstruccion(P, IndiceIns, Ins),
-					avanzarEstado(Ins, E, EstFinal),
-					avanzarIndice(Programa,_,Ins,IndiceIns,I),
-					Di is (I,EstFinal).
+armarEstadoConEntradaXSReverse([X],Estado) :- append([(2,X)],[],Estado).
+armarEstadoConEntradaXSReverse([X|L],Estado) :- length(L,S), Size is S+1,
+									  armarEstadoConEntradaXSReverse(L,Est),
+									  C is Size*2,
+									  append([(C,X)],Est,Estado).
+
+
+%snapAux(Estado, P, 1, Di) :- iEsimaInstruccion(P, 1, Ins),
+%					avanzarEstado(Ins, Estado, EstFinal),
+%					avanzarIndice(P,_,Ins,Indice,I),
+%					Di =:= (I,EstFinal).
+
+%snapAux(Estado, P, T, Di) :- T > 1, K is T-1, snap(Estado, P, K, Di1), pi1(Di1, IndiceIns),
+%					pi2(Di1, E), iEsimaInstruccion(P, IndiceIns, Ins),
+%					avanzarEstado(Ins, E, EstFinal),
+%					avanzarIndice(P,_,Ins,IndiceIns,I),
+%					Di =:= (I,EstFinal).
 						
 
 % avanzarIndice(+P, +S, +Ins, +I0, -I)
