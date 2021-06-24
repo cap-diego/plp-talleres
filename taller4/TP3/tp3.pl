@@ -131,7 +131,7 @@ iEsimaInstruccion(E, Indice, Instruccion) :- is_list(E), iesimo(E, Indice, Instr
 
 % Xs ---> pasar a estado inicial [X1 = XS[1], X2 =XS[2],...]
 % En el test de snap estado resultante (1,[(2,10)]) no deberia ser : (1,[(2,10),(1,1)])
-snap(Xs, P, T, Di) :- armarEstadoConEntradaXS(Xs,E), snapAux(E, P, T, Di).
+snap(Xs, P, T, Di) :- armarEstadoConEntradaXS(Xs,E), snapAux(E, P, T, Di), !.
 
 snapAux(Estado,P,0,(1,Estado)).
 
@@ -149,7 +149,7 @@ snapAux(Estado, P, T, Di) :- T > 1, K is T - 1, snapAux(Estado, P, K, Di1), pi1(
 
 armarEstadoConEntradaXS([],[]).
 armarEstadoConEntradaXS(XS,Estado) :- length(XS,L), L > 0,
-									  reverse(XS,XS2), armarEstadoConEntradaXSReverse(XS2,Estado).
+									  reverse(XS,XS2), armarEstadoConEntradaXSReverse(XS2,Estado), !.
 
 armarEstadoConEntradaXSReverse([X],Estado) :- append([(2,X)],[],Estado).
 armarEstadoConEntradaXSReverse([X|L],Estado) :- length(L,S), Size is S+1,
@@ -207,6 +207,15 @@ avanzarEstado(Instruccion, EstIni, EstFinal):-
 armarEstado(EstIni,X,Res,EstFinal) :- delete(EstIni,(X,_),L2),
 									  append(L2,[(X,Res)],EstFinal).
 
+%Había hecho una nueva versión pensando en el orden, pero no importa. Lo dejo comentado por las dudas.
+%armarEstado(EstIni,X,Res,EstFinal) :- not(member((X,_),EstIni)), append(EstIni,[(X,Res)],EstFinal).
+%armarEstado(EstIni,X,Res,EstFinal) :- updateIfExist(EstIni,(X,Res),EstFinal).
+%updateIfExist([],_,[]).
+%updateIfExist(XS,E,XF) :- length(XS,L), L > 0, reverse(XS,XS2),updateAux(XS,E,XF), !.
+%updateAux([(A,B)],(A,D),[(A,D)]).
+%updateAux([(A,B)],(C,D),[(A,B)]).
+%updateAux([X|L],(C,D),Estado) :- length(L,S), Size is S+1,updateAux(L,(C,D),Est2),updateAux([X],(C,D),Est1),append(Est1, Est2, Estado).
+
 ejecutarCodigo(0,V,V).
 ejecutarCodigo(1,V,Z) :- Z is V+1 .
 ejecutarCodigo(2,V,Z) :- Z is V-1 .
@@ -219,7 +228,14 @@ ejecutarCodigo(X,V,V) :- X > 2 .
 % Indica si el programa P con entradas Xs termina tras T pasos.
 % Se dice que un programa terminó cuando la próxima instrucción a ejecutar es
 % 1 más que la longitud del programa.
-% COMPLETAR
+
+
+%stp(Xs,P,T) :- T > 0,snap(Xs, P, T, Di)
+
+
+
+
+
 
 %% Pseudo-Halt
 
@@ -262,11 +278,23 @@ testCodificacion(1) :- codificacionLista([],1).
 testCodificacion(2) :- codificacionLista([1],2).
 % Agregar más tests
 
-cantidadTestsSnapYstp(3). % Actualizar con la cantidad de tests que entreguen
+cantidadTestsSnapYstp(6). % Actualizar con la cantidad de tests que entreguen
 % testSnapYstp(1) :- stp([],[],1).
-testSnapYstp(2) :- snap([10],[suma(0,1)],0,(1,[(2,10)])).
-testSnapYstp(3) :- snap([10],[suma(0,1)],1,(2,[(2,10),(1,1)])).
+testSnapYstp(1) :- snap([10],[suma(0,1)],0,(1,X)), sonIguales(X, [(2,10)]).
+testSnapYstp(2) :- snap([10],[suma(0,1)],1,(2,X)), sonIguales(X, [(2,10),(1,1)]).
+testSnapYstp(3) :- snap([10],[suma(0,1),nada(0,1)],2,(3,X)), sonIguales(X, [(2,10),(1,1)]).
+testSnapYstp(4) :- snap([10,2],[suma(0,1),suma(0,4)],2,(3,X)), sonIguales(X, [(2,10),(1,1),(4,3)]).
+testSnapYstp(5) :- snap([10,2],[suma(0,1),resta(0,4)],2,(3,X)), sonIguales(X, [(4,1),(2,10),(1,1)]).
+testSnapYstp(6) :- snap([10],[suma(1,1),goto(2,2,1)],2,(1,X)), sonIguales(X, [(2,10),(1,1)]).
+testSnapYstp(7) :- snap([1,2,3],[suma(1,1),suma(2,6), goto(3,2,1)],3,(1,X)), sonIguales(X, [(1,1),(2,1),(4,2),(6,4)]).
+testSnapYstp(8) :- snap([1,2,3],[suma(1,1),suma(2,6), goto(3,2,1)],4,(3,X)), sonIguales(X, [(1,1),(2,1),(4,2),(6,5)]).
 % Agregar más tests
+
+sonIguales(L1,L2) :- length(L1,Size1), length(L2,Size2), Size1 = Size2,
+					sonIgualesAux(L1,L2), !.
+
+sonIgualesAux(_,[]).
+sonIgualesAux(L,[X2|L2]) :- member(X2,L), sonIgualesAux(L,L2).
 
 cantidadTestsHalt(1). % Actualizar con la cantidad de tests que entreguen
 testHalt(1) :- pseudoHalt([1],[suma(0,1)]).
