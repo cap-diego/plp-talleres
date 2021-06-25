@@ -131,23 +131,19 @@ iEsimaInstruccion(E, Indice, Instruccion) :- is_list(E), iesimo(E, Indice, Instr
 
 % Xs ---> pasar a estado inicial [X1 = XS[1], X2 =XS[2],...]
 % En el test de snap estado resultante (1,[(2,10)]) no deberia ser : (1,[(2,10),(1,1)])
+
+
 snap(Xs, P, T, Di) :- armarEstadoConEntradaXS(Xs,E), snapAux(E, P, T, Di), !.
 
+snapAux(Estado,[],T,(1,Estado)) :- T > 0.
+
 snapAux(Estado,P,0,(1,Estado)).
-snapAux(Estado,[],_,(1,Estado)).%TODO verificar esto!
-%Si la cantidad de pasos es mayor a la cantidad de instrucciones, entonces sería lo mismo que te pasen una cantidad de instrucciones igual a la longitud del programa (y debería devolver como índice Long(P)+1)
-snapAux(Estado,P,T,Di) :- longitud(P,Size), Size < T, snapAux(Estado,P,Size,Di).
 
-snapAux(Estado,P,1,Di) :- iEsimaInstruccion(P,1,Ins),
-						  avanzarEstado(Ins,Estado,EstFinal),
-						  avanzarIndice(P,_,Ins,1,I),
-						  Di = (I,EstFinal).
+snapAux(Estado, P, T, (I,EstFinal)) :- T > 0, K is T - 1, snapAux(Estado, P, K, (IndiceIns,E)),
+									   iEsimaInstruccion(P, IndiceIns, Ins),
+									   avanzarEstado(Ins, E, EstFinal),
+									   avanzarIndice(P,Estado,Ins,IndiceIns,I).
 
-snapAux(Estado, P, T, Di) :- T > 1, K is T - 1, snapAux(Estado, P, K, Di1), pi1(Di1, IndiceIns),
-					pi2(Di1, E), iEsimaInstruccion(P, IndiceIns, Ins),
-					avanzarEstado(Ins, E, EstFinal),
-					avanzarIndice(P,_,Ins,IndiceIns,I),
-					Di = (I,EstFinal).
 
 
 armarEstadoConEntradaXS([],[]).
@@ -155,47 +151,40 @@ armarEstadoConEntradaXS(XS,Estado) :- length(XS,L), L > 0,
 									  reverse(XS,XS2), armarEstadoConEntradaXSReverse(XS2,Estado), !.
 
 armarEstadoConEntradaXSReverse([X],Estado) :- append([(2,X)],[],Estado).
-armarEstadoConEntradaXSReverse([X|L],Estado) :- length(L,S), Size is S+1,
+armarEstadoConEntradaXSReverse([X|L],Estado) :- length(L,S), S > 0, Size is S + 1,
 									  armarEstadoConEntradaXSReverse(L,Est),
 									  C is Size*2,
 									  append([(C,X)],Est,Estado).
-						
 
 % avanzarIndice(+P, +S, +Ins, +I0, -I)
 avanzarIndice(_,_,Instruccion,Indice,I) :- 
 							codigoInstruccion(Instruccion,Codigo),
 							Codigo < 3, I is Indice+1.
-avanzarIndice(_,_,Instruccion,Indice,I) :-
+avanzarIndice(_,S,Instruccion,Indice,I) :-
 							codigoInstruccion(Instruccion,Codigo),
 							Codigo >= 3,
 							variableInstruccion(Instruccion,V),
-							V =:= 0,
+							evaluar(S, V, Valor),
+							Valor =:= 0,
 							I is Indice+1.
-avanzarIndice(Programa,_,Instruccion,_,I) :-
+avanzarIndice(Programa,S,Instruccion,_,I) :-
 							codigoInstruccion(Instruccion,Codigo),
 							Codigo >= 3,
 							variableInstruccion(Instruccion,V),
-							V \= 0,
+							evaluar(S, V, Valor),
+							Valor \= 0,
 							Etiqueta is Codigo-2,
 							indiceDeEtiqueta(Programa,Etiqueta,I).
-							
-avanzarIndice(Programa,_,Instruccion,_,I) :-
-							codigoInstruccion(Instruccion,Codigo),
-							Codigo >= 3,
-							variableInstruccion(Instruccion,V),
-							V \= 0,
-							Etiqueta is Codigo-2,
-							not(indiceDeEtiqueta(Programa,Etiqueta,I)),
-							longitud(Programa, L),
-							I is L+1.
+						
 							
 							
-indiceDeEtiqueta(Programa,Etiqueta,I) :- longitud(Programa, L), between(1,L,IndiceIns),
+indiceDeEtiqueta(Programa,Etiqueta,IndiceIns) :- longitud(Programa, L), 
+										 between(1,L,IndiceIns),
 										 iEsimaInstruccion(Programa, IndiceIns, Ins),
 										 etiquetaInstruccion(Ins, E1),
-										 E1 =:= Etiqueta,
-										 I is IndiceIns.
+										 E1 =:= Etiqueta,!.
 
+indiceDeEtiqueta(Programa,_,I) :- longitud(Programa, L), I is L+1.
 							
 
 % avanzarEstado(+Ins, +S0, -S) 
@@ -210,18 +199,10 @@ avanzarEstado(Instruccion, EstIni, EstFinal):-
 armarEstado(EstIni,X,Res,EstFinal) :- delete(EstIni,(X,_),L2),
 									  append(L2,[(X,Res)],EstFinal).
 
-%Había hecho una nueva versión pensando en el orden, pero no importa. Lo dejo comentado por las dudas.
-%armarEstado(EstIni,X,Res,EstFinal) :- not(member((X,_),EstIni)), append(EstIni,[(X,Res)],EstFinal).
-%armarEstado(EstIni,X,Res,EstFinal) :- updateIfExist(EstIni,(X,Res),EstFinal).
-%updateIfExist([],_,[]).
-%updateIfExist(XS,E,XF) :- length(XS,L), L > 0, reverse(XS,XS2),updateAux(XS,E,XF), !.
-%updateAux([(A,B)],(A,D),[(A,D)]).
-%updateAux([(A,B)],(C,D),[(A,B)]).
-%updateAux([X|L],(C,D),Estado) :- length(L,S), Size is S+1,updateAux(L,(C,D),Est2),updateAux([X],(C,D),Est1),append(Est1, Est2, Estado).
-
 ejecutarCodigo(0,V,V).
 ejecutarCodigo(1,V,Z) :- Z is V+1 .
-ejecutarCodigo(2,V,Z) :- Z is V-1 .
+ejecutarCodigo(2,V,Z) :- V \= 0, Z is V-1 .
+ejecutarCodigo(2,0,0).
 ejecutarCodigo(X,V,V) :- X > 2 .
 
 
@@ -233,7 +214,7 @@ ejecutarCodigo(X,V,V) :- X > 2 .
 % 1 más que la longitud del programa.
 
 
-stp(XS,P,T) :- longitud(P,L), End is L+1, between(1,T,I), snap(Xs, P, I, Di), pi1(Di,ProxI), ProxI = End, !.
+stp(XS,P,T) :- longitud(P,L), End is L+1,between(1,T,I) ,snap(Xs, P, I, Di), pi1(Di,ProxI), ProxI = End, !.
 
 
 
@@ -243,7 +224,7 @@ stp(XS,P,T) :- longitud(P,L), End is L+1, between(1,T,I), snap(Xs, P, I, Di), pi
 %% Pseudo-Halt
 
 % pseudoHalt(+X, +Y)
-% COMPLETAR
+% pseudoHalt(X, Y) :- stp(XS,P,T)
 
 % Buscar entradas para las cuales el programa Y termina
 % pseudoHalt2(-X, +Y)
@@ -291,17 +272,17 @@ testSnapYstp(6) :- snap([10],[suma(1,1),goto(2,2,1)],2,(1,X)), sonIguales(X, [(2
 testSnapYstp(7) :- snap([1,2,3],[suma(1,1),suma(2,6), goto(3,2,1)],3,(1,X)), sonIguales(X, [(1,1),(2,1),(4,2),(6,4)]).
 testSnapYstp(8) :- snap([1,2,3],[suma(1,1),suma(2,6), goto(3,2,1)],4,(2,X)), sonIguales(X, [(1,2),(2,1),(4,2),(6,4)]).
 testSnapYstp(9) :- snap([10,0],[suma(1,1),goto(2,4,3)],2,(3,X)), sonIguales(X, [(2,10),(1,1),(4,0)]).
-testSnapYstp(10) :- snap([0],[suma(1,1),goto(2,2,1),resta(3,2)],3,(2,X)), sonIguales(X, [(1,2),(2,0)]).
+testSnapYstp(10) :- snap([0],[suma(1,1),goto(2,2,1),resta(3,2)],3,(4,X)), sonIguales(X, [(1,1),(2,0)]).
 testSnapYstp(11) :- snap([5],[suma(1,1),nada(1,1),goto(2,2,1)],3,(1,X)), sonIguales(X, [(1,1),(2,5)]).
 testSnapYstp(12) :- stp([],[],1).
 testSnapYstp(13) :- stp([],[nada(1,1)],2).
-testSnapYstp(14) :- stp([0],[suma(1,1),resta(3,2)],4).
-testSnapYstp(15) :- stp([2],[nada(2,1), goto(2,2,1)],3).
+testSnapYstp(14) :- stp([0],[suma(1,1),resta(3,2)],2).
+testSnapYstp(15) :- stp([0],[nada(2,1), goto(2,2,1)],3).
 testSnapYstp(16) :- stp([0],[nada(1,1), goto(2,0,1)],3).
 testSnapYstp(17) :- stp([4],[nada(1,1), goto(2,2,5), suma(1,1), nada(1,1)],3).
 testSnapYstp(18) :- stp([5,0],[goto(1,2,2), nada(1,1), goto(2,4,1), nada(2,1)],3).
-testSnapYstp(19) :- snap([5,0],[goto(1,2,2), nada(1,1), goto(2,4,1), nada(2,1)],1,(4,X)), sonIguales(X, [(4,0),(2,4)]).
-testSnapYstp(20) :- snap([5,0],[goto(1,2,2), nada(1,1), goto(2,4,1), nada(2,1)],2,(4,X)), sonIguales(X, [(4,0),(2,4)]).
+testSnapYstp(19) :- snap([5,0],[goto(1,2,2), nada(1,1), goto(2,4,1), nada(2,1)],1,(3,X)), sonIguales(X, [(4,0),(2,5)]).
+testSnapYstp(20) :- snap([5,0],[goto(1,2,2), nada(1,1), goto(2,4,1), nada(2,1)],2,(4,X)), sonIguales(X, [(4,0),(2,5)]).
 testSnapYstp(21) :- snap([4,0],[goto(1,2,2), nada(1,1), goto(2,4,1), nada(2,1)],3,(5,X)), sonIguales(X, [(4,0),(2,4),(1,0)]).
 % Agregar más tests
 
