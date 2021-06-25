@@ -135,14 +135,18 @@ iEsimaInstruccion(E, Indice, Instruccion) :- is_list(E), iesimo(E, Indice, Instr
 
 snap(Xs, P, T, Di) :- armarEstadoConEntradaXS(Xs,E), snapAux(E, P, T, Di), !.
 
-snapAux(Estado,[],T,(1,Estado)) :- T > 0.
-
-snapAux(Estado,P,0,(1,Estado)).
+snapAux(Estado,_,0,(1,Estado)).
 
 snapAux(Estado, P, T, (I,EstFinal)) :- T > 0, K is T - 1, snapAux(Estado, P, K, (IndiceIns,E)),
+									   longitud(P,Size), Size >= IndiceIns,
 									   iEsimaInstruccion(P, IndiceIns, Ins),
 									   avanzarEstado(Ins, E, EstFinal),
 									   avanzarIndice(P,Estado,Ins,IndiceIns,I).
+
+snapAux(Estado, P, T, (I,EstFinal)) :- T > 0, K is T - 1, snapAux(Estado, P, K, (IndiceIns,E)),
+									   longitud(P,Size), Size < IndiceIns,
+									   I is Size+1, EstFinal = E.
+
 
 
 
@@ -214,7 +218,7 @@ ejecutarCodigo(X,V,V) :- X > 2 .
 % 1 más que la longitud del programa.
 
 
-stp(XS,P,T) :- longitud(P,L), End is L+1,between(1,T,I) ,snap(Xs, P, I, Di), pi1(Di,ProxI), ProxI = End, !.
+stp(XS,P,T) :- longitud(P,L), snap(XS, P, T, Di), pi1(Di,ProxI), ProxI > L.
 
 
 
@@ -262,7 +266,7 @@ testCodificacion(1) :- codificacionLista([],1).
 testCodificacion(2) :- codificacionLista([1],2).
 % Agregar más tests
 
-cantidadTestsSnapYstp(15). % Actualizar con la cantidad de tests que entreguen
+cantidadTestsSnapYstp(23). % Actualizar con la cantidad de tests que entreguen
 testSnapYstp(1) :- snap([10],[suma(0,1)],0,(1,X)), sonIguales(X, [(2,10)]).
 testSnapYstp(2) :- snap([10],[suma(0,1)],1,(2,X)), sonIguales(X, [(2,10),(1,1)]).
 testSnapYstp(3) :- snap([10],[suma(0,1),nada(0,1)],2,(3,X)), sonIguales(X, [(2,10),(1,1)]).
@@ -274,18 +278,21 @@ testSnapYstp(8) :- snap([1,2,3],[suma(1,1),suma(2,6), goto(3,2,1)],4,(2,X)), son
 testSnapYstp(9) :- snap([10,0],[suma(1,1),goto(2,4,3)],2,(3,X)), sonIguales(X, [(2,10),(1,1),(4,0)]).
 testSnapYstp(10) :- snap([0],[suma(1,1),goto(2,2,1),resta(3,2)],3,(4,X)), sonIguales(X, [(1,1),(2,0)]).
 testSnapYstp(11) :- snap([5],[suma(1,1),nada(1,1),goto(2,2,1)],3,(1,X)), sonIguales(X, [(1,1),(2,5)]).
-testSnapYstp(12) :- stp([],[],1).
-testSnapYstp(13) :- stp([],[nada(1,1)],2).
-testSnapYstp(14) :- stp([0],[suma(1,1),resta(3,2)],2).
-testSnapYstp(15) :- stp([0],[nada(2,1), goto(2,2,1)],3).
-testSnapYstp(16) :- stp([0],[nada(1,1), goto(2,0,1)],3).
-testSnapYstp(17) :- stp([4],[nada(1,1), goto(2,2,5), suma(1,1), nada(1,1)],3).
-testSnapYstp(18) :- stp([5,0],[goto(1,2,2), nada(1,1), goto(2,4,1), nada(2,1)],3).
-testSnapYstp(19) :- snap([5,0],[goto(1,2,2), nada(1,1), goto(2,4,1), nada(2,1)],1,(3,X)), sonIguales(X, [(4,0),(2,5)]).
-testSnapYstp(20) :- snap([5,0],[goto(1,2,2), nada(1,1), goto(2,4,1), nada(2,1)],2,(4,X)), sonIguales(X, [(4,0),(2,5)]).
-testSnapYstp(21) :- snap([4,0],[goto(1,2,2), nada(1,1), goto(2,4,1), nada(2,1)],3,(5,X)), sonIguales(X, [(4,0),(2,4),(1,0)]).
+testSnapYstp(12) :- snap([4],[nada(1,1), goto(2,2,5), suma(1,1), nada(1,1)],2,(5,X)), sonIguales(X, [(1,0),(2,4)]).
+testSnapYstp(13) :- snap([10],[suma(0,2)],5,(2,X)), sonIguales(X, [(2,11)]).
+testSnapYstp(14) :- stp([],[],1).
+testSnapYstp(15) :- stp([],[nada(1,1)],2).
+testSnapYstp(16) :- stp([0],[suma(1,1),resta(3,2)],2).
+testSnapYstp(17) :- stp([0],[nada(2,1), goto(2,2,1)],3).
+testSnapYstp(18) :- stp([0],[nada(1,1), goto(2,0,1)],3).
+testSnapYstp(19) :- stp([4],[nada(1,1), goto(2,2,5), suma(1,1), nada(1,1)],2).
+testSnapYstp(20) :- stp([5,0],[goto(1,2,2), nada(1,1), goto(2,4,1), nada(2,1)],4).
+testSnapYstp(21) :- snap([5,0],[goto(1,2,2), nada(1,1), goto(2,4,1), nada(2,1)],1,(3,X)), sonIguales(X, [(4,0),(2,5)]).
+testSnapYstp(22) :- snap([5,0],[goto(1,2,2), nada(1,1), goto(2,4,1), nada(2,1)],2,(4,X)), sonIguales(X, [(4,0),(2,5)]).
+testSnapYstp(23) :- snap([4,0],[goto(1,2,2), nada(1,1), goto(2,4,1), nada(2,1)],3,(5,X)), sonIguales(X, [(4,0),(2,4),(1,0)]).
 % Agregar más tests
 
+%Faltaría ver que L1 está en L2, pero como no hay repetidos no es necesario
 sonIguales(L1,L2) :- length(L1,Size1), length(L2,Size2), Size1 = Size2,
 					sonIgualesAux(L1,L2), !.
 
