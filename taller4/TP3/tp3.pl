@@ -227,8 +227,8 @@ stp(XS,P,T) :- longitud(P,L), snap(XS, P, T, Di), pi1(Di,ProxI), ProxI > L.
 
 %% Pseudo-Halt
 
-% pseudoHalt(+X, +Y)
-% pseudoHalt(X, Y) :- stp(XS,P,T)
+% pseudoHalt(+X, +P)
+ pseudoHalt(X, P) :- desde2(1,T), stp([X],P,T), !.
 
 % Buscar entradas para las cuales el programa Y termina
 % pseudoHalt2(-X, +Y)
@@ -299,8 +299,10 @@ sonIguales(L1,L2) :- length(L1,Size1), length(L2,Size2), Size1 = Size2,
 sonIgualesAux(_,[]).
 sonIgualesAux(L,[X2|L2]) :- member(X2,L), sonIgualesAux(L,L2).
 
-cantidadTestsHalt(1). % Actualizar con la cantidad de tests que entreguen
-testHalt(1) :- pseudoHalt([1],[suma(0,1)]).
+cantidadTestsHalt(3). % Actualizar con la cantidad de tests que entreguen
+testHalt(1) :- pseudoHalt(1,[suma(0,1)]).
+testHalt(2) :- pseudoHalt(4,[nada(1,1), goto(2,2,5), suma(1,1), nada(1,1)]).
+testHalt(3) :- pseudoHalt(4,[nada(1,1), goto(2,2,1)]).
 % Agregar más tests
 
 tests(evaluar) :- cantidadTestsEvaluar(M), forall(between(1,M,N), testEvaluar(N)).
