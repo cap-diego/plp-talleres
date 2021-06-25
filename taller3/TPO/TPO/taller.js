@@ -40,6 +40,8 @@ nuevoAgente = function (agencia) {
 	return agente
 };
 
+// crear un funcion auxiliar, registrat agente --> dejarDeEspiar, actualizarCantAgentes, setAgenteID
+
 enrolar = function (agente, agencia) {
 	Object.setPrototypeOf(agente, agencia.Programa.prototype)
 	actualizarCantAgentes(agencia, 1)
