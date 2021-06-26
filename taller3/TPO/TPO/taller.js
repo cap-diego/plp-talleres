@@ -1,13 +1,13 @@
-AgenteDeControl = function (){
-	this.agencia = "Control";
+AgenteDeControl = function () {
+  this.agencia = "Control";
 };
 
-setAgenteID = function(agente, label, id) {
-	agente[label] = id
+setAgenteID = function (agente, label, id) {
+  agente[label] = id
 }
 
-actualizarCantAgentes = function(agencia, n) {
-	agencia.Programa.prototype[agencia.nLabel] += n
+actualizarCantAgentes = function (agencia, n) {
+  agencia.Programa.prototype[agencia.nLabel] += n
 }
 
 smart = new AgenteDeControl();
@@ -18,54 +18,53 @@ Agencia = function (agenteFn, idLabel, nLabel) {
   this.nLabel = nLabel;
   agenteFn.prototype[this.nLabel] = 0;
 
-  agenteFn.prototype.espiar = function(agencia) {
-	agencia.Programa.bind(this)()
+  agenteFn.prototype.espiar = function (agencia) {
+    agencia.Programa.bind(this)()
     Object.setPrototypeOf(this, agencia.Programa.prototype)
-	actualizarCantAgentes(agencia, 1)
+    actualizarCantAgentes(agencia, 1)
   }
-  
+
 };
 
-control = new Agencia(AgenteDeControl,"idC","nC");
+control = new Agencia(AgenteDeControl, "idC", "nC");
+
+asociarAgente = function (agente, agencia) {
+  actualizarCantAgentes(agencia, 1)
+  setAgenteID(agente, agencia.idLabel, agencia.Programa.prototype[agencia.nLabel])
+
+  agente.dejarDeEspiar = function () {
+    Object.setPrototypeOf(this, agencia.Programa.prototype)
+  }
+}
 
 nuevoAgente = function (agencia) {
-	let agente = new agencia.Programa(agencia);
-	actualizarCantAgentes(agencia, 1)
-	setAgenteID(agente, agencia.idLabel, agencia.Programa.prototype[agencia.nLabel])
+  let agente = new agencia.Programa(agencia);
+  asociarAgente(agente, agencia)
 
-	agente.dejarDeEspiar = function() {
-		Object.setPrototypeOf(this, agencia.Programa.prototype)
-	}
-
-	return agente
+  return agente
 };
 
 // crear un funcion auxiliar, registrat agente --> dejarDeEspiar, actualizarCantAgentes, setAgenteID
 
 enrolar = function (agente, agencia) {
-	Object.setPrototypeOf(agente, agencia.Programa.prototype)
-	actualizarCantAgentes(agencia, 1)
-	setAgenteID(agente, agencia.idLabel, agencia.Programa.prototype[agencia.nLabel])
-	agencia.Programa.bind(agente)()
+  Object.setPrototypeOf(agente, agencia.Programa.prototype)
+  asociarAgente(agente, agencia)
 
-	agente.dejarDeEspiar = function() {
-		Object.setPrototypeOf(this, agencia.Programa.prototype)
-	}
-
+  agencia.Programa.bind(agente)()
 };
 
-agenteEspecial = function(agencia, skillFn) {
+agenteEspecial = function (agencia, skillFn) {
   this[skillFn.name] = skillFn
   enrolar(this, agencia)
 }
 
-camuflar = function(obj) {
+camuflar = function (obj) {
   Object.assign(this, obj)
 };
 
 // Agreguen aquí los tests representados como funciones que toman un objeto res como argumento.
-  // Pueden llamar a res.write para escribir en la salida.
-  // Si le pasan un booleano como segundo argumento, el color de los que escriban será verde o rojo en base al valor de dicho booleano.
+// Pueden llamar a res.write para escribir en la salida.
+// Si le pasan un booleano como segundo argumento, el color de los que escriban será verde o rojo en base al valor de dicho booleano.
 
 // Ejemplo de un test
 function testEjemplo(res) {
@@ -74,12 +73,12 @@ function testEjemplo(res) {
   let sumando2 = 6;
   let resultado_obtenido = sumando1 + sumando2;
   let resultado_esperado = 10;
-  res.write("El resultado de sumar " + sumando1 + " y " + sumando2 + " da " + resultado_obtenido, (resultado_obtenido===resultado_esperado));
+  res.write("El resultado de sumar " + sumando1 + " y " + sumando2 + " da " + resultado_obtenido, (resultado_obtenido === resultado_esperado));
   sumando1 = "4";
   sumando2 = "6";
   resultado_obtenido = sumando1 + sumando2;
   resultado_esperado = "10";
-  res.write("El resultado de sumar " + sumando1 + " y " + sumando2 + " da " + resultado_obtenido, (resultado_obtenido===resultado_esperado));
+  res.write("El resultado de sumar " + sumando1 + " y " + sumando2 + " da " + resultado_obtenido, (resultado_obtenido === resultado_esperado));
   sumando1 = 4;
   sumando2 = undefined;
   resultado_obtenido = sumando1 + sumando2;
@@ -111,7 +110,7 @@ function testEjercicio2(res) {
   let agenciaEstaDefinida = Agencia != undefined;
   res.write(`La función Agencia ${si_o_no(agenciaEstaDefinida)} está definida`, agenciaEstaDefinida);
 
-  let AgenteDeKaos = function() {};
+  let AgenteDeKaos = function () { };
   kaos = new Agencia(AgenteDeKaos);
   let tieneDefinidoElProgramaDeEntrenamiento = Object.values(kaos).includes(AgenteDeKaos);
   res.write(`La agencia ${si_o_no(tieneDefinidoElProgramaDeEntrenamiento)} tiene definido un programa de entrenamiento`, tieneDefinidoElProgramaDeEntrenamiento);
@@ -126,7 +125,7 @@ function testEjercicio2(res) {
 // Test Ejercicio 3
 function testEjercicio3(res) {
   res.write("\n|| Crear una agencia y un agente ||\n");
-  let fConstructora = function() { };
+  let fConstructora = function () { };
   fConstructora.prototype.peliculas = 2;
   let oss = new Agencia(fConstructora);
   let miniEspia = nuevoAgente(oss);
@@ -145,7 +144,7 @@ function testEjercicio3(res) {
   res.write(`El agente enrolado ${si_o_no(mensajePrototipoActualizado)} sabe que el mensaje se actualizó`, mensajePrototipoActualizado);
 
   let agentes = 0;
-  let fConstructora2 = function() { 
+  let fConstructora2 = function () {
     agentes++;
   };
   let cia = new Agencia(fConstructora2);
@@ -156,7 +155,7 @@ function testEjercicio3(res) {
 
 
   res.write("\n|| Creamos un Agente Bombero el cual lo enrolamos en la agencia de bomberos alpha y despues es trasladado a beta ||\n");
-  let fBomberosAlpha = function() {
+  let fBomberosAlpha = function () {
     this.saludo = "Somos del escuadron alpha"
   };
   fBomberosAlpha.prototype.totalSedes = 1;
@@ -171,7 +170,7 @@ function testEjercicio3(res) {
   let sabeElSaludoAlpha = bombero.saludo === "Somos del escuadron alpha";
   res.write(`El bombero ${si_o_no(sabeElSaludoAlpha)} conoce el saludo de los bomberos alpha`, sabeElSaludoAlpha);
 
-  let fBomberosBeta = function() {
+  let fBomberosBeta = function () {
     this.saludo = "Somos del escuadron beta"
   };
   fBomberosBeta.prototype.totalSedes = 2;
@@ -187,10 +186,10 @@ function testEjercicio3(res) {
 
 // Test Ejercicio 4
 function testEjercicio4(res) {
-	res.write("\n|| Crear un agente de cada agencia ||\n");
-	control = new Agencia(function() { }, "idC", "nC");
-	kaos = new Agencia(function() { }, "idK", "nK");
-	let agenteK = {};
+  res.write("\n|| Crear un agente de cada agencia ||\n");
+  control = new Agencia(function () { }, "idC", "nC");
+  kaos = new Agencia(function () { }, "idK", "nK");
+  let agenteK = {};
   let agenteC = nuevoAgente(control);
   enrolar(agenteK, kaos);
   let C_conoce_idC = "idC" in agenteC;
@@ -213,9 +212,9 @@ function testEjercicio4(res) {
 
 
   res.write("\n|| Creamos la agencia de policia y de la Cia, donde agregamos un agente a cada agencia ||\n");
-  let agenciaPolicia = new Agencia(function() { this.orden = "Arrestar" }, "idP", "nP");
-  let agenciaCia = new Agencia(function() { this.orden = "Investigar" }, "idCIA", "nCIA");
-  let teniente =nuevoAgente(agenciaPolicia);
+  let agenciaPolicia = new Agencia(function () { this.orden = "Arrestar" }, "idP", "nP");
+  let agenciaCia = new Agencia(function () { this.orden = "Investigar" }, "idCIA", "nCIA");
+  let teniente = nuevoAgente(agenciaPolicia);
   let policiaCivil = {}
   let general = nuevoAgente(agenciaCia);
   let agenteEspecial = {}
@@ -234,7 +233,7 @@ function testEjercicio4(res) {
   let policia_conoce_valor_idP = policiaCivil.idP === 2;
   let policia_conoce_valor_nP = policiaCivil.nP === 2;
   let agente_especial_conoce_valor_idCIA = agenteEspecial.idCIA === 2;
-  let agente_especial_conoce_valor_nCIA  = agenteEspecial.nCIA === 3;
+  let agente_especial_conoce_valor_nCIA = agenteEspecial.nCIA === 3;
 
   res.write("El agente de Policia" + si_o_no(policia_conoce_su_idP) + "sabe responder idP", policia_conoce_su_idP);
   res.write("El agente de Policia" + si_o_no(policia_conoce_valor_idP) + "conoce el valor de su idP", policia_conoce_valor_idP);
@@ -254,8 +253,8 @@ function testEjercicio4(res) {
 // Test Ejercicio 5
 function testEjercicio5(res) {
   res.write("\n|| Crear un agente de cada agencia y mandarlo a espiar ||\n");
-  control = new Agencia(function() { }, "idC", "nC");
-  kaos = new Agencia(function() { }, "idK", "nK");
+  control = new Agencia(function () { }, "idC", "nC");
+  kaos = new Agencia(function () { }, "idK", "nK");
   let agenteK = nuevoAgente(kaos);
   let agenteC = {};
   enrolar(agenteC, control);
@@ -278,7 +277,7 @@ function testEjercicio5(res) {
   res.write("El espía de Kaos" + si_o_no(K_conoce_idK) + "sabe responder idK", K_conoce_idK);
   res.write("El espía de Kaos" + si_o_no(K_conoce_nK) + "sabe responder nK", !K_conoce_nK);
 
-  smithsAgencia = new Agencia(function() { }, "idS", "nS");
+  smithsAgencia = new Agencia(function () { }, "idS", "nS");
   let agenteS = nuevoAgente(smithsAgencia);
   let agenteS_2 = {};
   enrolar(agenteS_2, smithsAgencia);
@@ -291,15 +290,15 @@ function testEjercicio5(res) {
   let S_conoce_nC = "nC" in agenteS;
   let S_id = agenteS[smithsAgencia.idLabel] == 1;
   let S_n = smithsAgencia.Programa.prototype[smithsAgencia.nLabel] == 2;
-  
+
   res.write("El agente de la agencia de Smith " + si_o_no(S_id) + "tiene id=1", S_id);
   res.write("La agencia Smith " + si_o_no(S_id) + "tiene tiene 2 agentes", S_n);
   res.write("El agente de la agencia de Smith" + si_o_no(S_conoce_idC) + "sabe responder idC", !S_conoce_idC);
   res.write("El agente de la agencia de Smith" + si_o_no(S_conoce_nC) + "sabe responder nC", !S_conoce_nC);
-  	
+
   let nC = control.Programa.prototype[control.nLabel] == 2;
   res.write("***La agencia Control" + si_o_no(nC) + "tiene 2 agentes***", nC);
-  
+
   res.write("\n|| El agente Smith se infiltró en Control!||\n");
   agenteS.espiar(control);
   S_conoce_idC = "idC" in agenteS;
@@ -317,7 +316,7 @@ function testEjercicio5(res) {
   res.write("El agente smith que espía Control" + si_o_no(S_id) + "sigue teniendo id 1", S_id);
   res.write("La agencia Smith " + si_o_no(S_id) + "sigue teniendo 2 agentes", S_n);
   res.write("***La agencia Control" + si_o_no(nC) + "tiene 3 agentes***", nC);
-  
+
   res.write("\n|| El agente Smith deja de espiar la agencia Control!||\n");
   agenteS.dejarDeEspiar();
   S_conoce_idS = "idS" in agenteS;
@@ -334,17 +333,17 @@ function testEjercicio5(res) {
   res.write("El agente smith que espiaba Control" + si_o_no(S_id) + "sigue teniendo id 1", S_id);
   res.write("La agencia Smith " + si_o_no(S_id) + "sigue teniendo 2 agentes", S_n);
   res.write("***La agencia Control" + si_o_no(nC) + "sigue teniendo 3 agente***", nC);
-  
+
   res.write("\n|| El otro agente Smith espia la agencia Smith!||\n");
   agenteS_2.espiar(smithsAgencia);
   let S2_conoce_idS = "idS" in agenteS_2;
   let S2_conoce_nS = "nS" in agenteS_2;
   let S2_id = agenteS_2[smithsAgencia.idLabel] == 2;
-  
+
   res.write("El otro agente de la agencia de Smith" + si_o_no(S2_conoce_nS) + "sabe responder nS", S2_conoce_nS);
   res.write("El otro agente de la agencia de Smith" + si_o_no(S2_conoce_idS) + "sabe responder idS", S2_conoce_idS);
   res.write("El otro agente de la agencia de Smith " + si_o_no(S2_id) + "tiene id=2", S2_id);
-  
+
   res.write("\n|| Ahora deja de espiar su propia agencia Smith!||\n");
   agenteS_2.dejarDeEspiar();
   S2_conoce_idS = "idS" in agenteS_2;
@@ -358,11 +357,11 @@ function testEjercicio5(res) {
 
 // Test Ejercicio 6
 function testEjercicio6(res) {
-  let fConstructora = function() {
+  let fConstructora = function () {
     this.sombrero = true;
   };
   let owca = new Agencia(fConstructora, "idOw", "nOw");
-  let sacarseElSombrero = function() {
+  let sacarseElSombrero = function () {
     this.sombrero = false;
   }
   res.write("\n|| Crear al agente P ||\n");
@@ -374,7 +373,7 @@ function testEjercicio6(res) {
   let camaleon = new agenteEspecial(owca, camuflar);
   camaleon.camuflar({
     color: 'rojo',
-    repetir: function(s) {return s;}
+    repetir: function (s) { return s; }
   });
 
   let camaleonSabeResponderColor = 'color' in camaleon;
@@ -393,12 +392,12 @@ function testEjercicio6(res) {
   camaleon_conoce_nOw = "nOw" in camaleon;
   res.write("El agente camaleon" + si_o_no(camaleon_conoce_idOw) + "conoce idOw", camaleon_conoce_idOw);
   res.write("El agente camaleon" + si_o_no(camaleon_conoce_nOw) + "conoce nOw", camaleon_conoce_nOw);
-  
+
   res.write("\n|| El agente Camaleón se infiltra en Kaos||\n");
-  kaos = new Agencia(function() { }, "idK", "nK");
+  kaos = new Agencia(function () { }, "idK", "nK");
   let agenteK = nuevoAgente(kaos);
   camaleon.espiar(kaos);
-  
+
   camaleon_conoce_idK = "idK" in camaleon;
   camaleon_conoce_nK = "nK" in camaleon;
   camaleon_conoce_idOw = "idOw" in camaleon;
@@ -407,12 +406,12 @@ function testEjercicio6(res) {
   res.write("El espía de Kaos (camaleon)" + si_o_no(camaleon_conoce_nK) + "sabe responder nK", camaleon_conoce_nK);
   res.write("El agente camaleon" + si_o_no(camaleon_conoce_idOw) + "conoce idOw", camaleon_conoce_idOw);
   res.write("El agente camaleon" + si_o_no(camaleon_conoce_nOw) + "conoce nOw", !camaleon_conoce_nOw);
-  
-  
+
+
   res.write("\n|| El agente Camaleón deja de espiar Kaos||\n");
   camaleon.dejarDeEspiar();
-  
-camaleon_conoce_idK = "idK" in camaleon;
+
+  camaleon_conoce_idK = "idK" in camaleon;
   camaleon_conoce_nK = "nK" in camaleon;
   camaleon_conoce_idOw = "idOw" in camaleon;
   camaleon_conoce_nOw = "nOw" in camaleon;
@@ -422,27 +421,27 @@ camaleon_conoce_idK = "idK" in camaleon;
   res.write("El agente camaleon" + si_o_no(camaleon_conoce_nK) + "sabe responder nK", !camaleon_conoce_nK);
   res.write("El agente camaleon" + si_o_no(camaleon_conoce_idOw) + "conoce idOw", camaleon_conoce_idOw);
   res.write("El agente camaleon" + si_o_no(camaleon_conoce_nOw) + "conoce nOw", camaleon_conoce_nOw);
-  
-  
+
+
   res.write("\n|| Crear al agente Pitonisa ||\n");
-  let futuroAgencia = new Agencia(function() { }, "idO", "nO");
-  let skillFn = {verFuturo: function() {return true;}};
+  let futuroAgencia = new Agencia(function () { }, "idO", "nO");
+  let skillFn = { verFuturo: function () { return true; } };
   let pitonisa = new agenteEspecial(futuroAgencia, camuflar);
   pitonisa.camuflar(skillFn);
   let agentePuedeVerElFuturo = 'verFuturo' in pitonisa;
   res.write(`El agente Pitonisa ${si_o_no(agentePuedeVerElFuturo)} sabe ver el futuro`, agentePuedeVerElFuturo);
-  
+
   res.write("\n|| Skill editado fuera del agente||\n");
-  skillFn.verFuturo = function(b) {return b};
+  skillFn.verFuturo = function (b) { return b };
   agentePuedeVerElFuturo = 'verFuturo' in pitonisa;
   res.write(`El agente Pitonisa ${si_o_no(agentePuedeVerElFuturo)} sigue pudiendo ver el futuro`, agentePuedeVerElFuturo);
-  
+
   res.write("\n|| Agrego skills a Pitonisa sin cambiar ver el futuro||\n");
   pitonisa.camuflar({
-    laCucharaSeDobla: function() {return false;}
+    laCucharaSeDobla: function () { return false; }
   });
   agenteSabeSiSeDoblaLaCuchara = 'laCucharaSeDobla' in pitonisa;
   agentePuedeVerElFuturo = 'verFuturo' in pitonisa;
-  res.write(`El agente Pitonisa ${si_o_no(agenteSabeSiSeDoblaLaCuchara)} sabe si se dobla la cuchara`, agenteSabeSiSeDoblaLaCuchara);  
+  res.write(`El agente Pitonisa ${si_o_no(agenteSabeSiSeDoblaLaCuchara)} sabe si se dobla la cuchara`, agenteSabeSiSeDoblaLaCuchara);
   res.write(`El agente Pitonisa ${si_o_no(agentePuedeVerElFuturo)} sigue pudiendo ver el futuro`, agentePuedeVerElFuturo);
 }
