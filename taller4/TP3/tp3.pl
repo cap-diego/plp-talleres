@@ -232,11 +232,12 @@ stp(XS,P,T) :- longitud(P,L), snap(XS, P, T, Di), pi1(Di,ProxI), ProxI > L.
 
 % Buscar entradas para las cuales el programa Y termina
 % pseudoHalt2(-X, +Y)
+pseudoHalt2(E, P) :- desde2(1,T), pseudoHalt(T, P), E is T.
 % COMPLETAR
 
 % Buscar pares programa-entrada que terminen
 % pseudoHalt3(-X, -Y)
-% COMPLETAR
+pseudoHalt3(E, P) :- desde2(1,E), between(1,E,Y), N is E - Y, programa(P,N), pseudoHalt(E, P).
 
 % programa(-P, +N)
 programa([], 0).
