@@ -2,8 +2,8 @@ AgenteDeControl = function () {
   this.agencia = "Control";
 };
 
-setAgenteID = function (agente, label, id) {
-  agente[label] = id
+setAgenteID = function (agente, agencia) {
+  agente[agencia.idLabel] = agencia.Programa.prototype[agencia.nLabel]
 }
 
 actualizarCantAgentes = function (agencia, n) {
@@ -30,7 +30,7 @@ control = new Agencia(AgenteDeControl, "idC", "nC");
 
 asociarAgente = function (agente, agencia) {
   actualizarCantAgentes(agencia, 1)
-  setAgenteID(agente, agencia.idLabel, agencia.Programa.prototype[agencia.nLabel])
+  setAgenteID(agente, agencia)
 
   agente.dejarDeEspiar = function () {
     Object.setPrototypeOf(this, agencia.Programa.prototype)
