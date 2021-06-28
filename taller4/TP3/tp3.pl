@@ -267,12 +267,17 @@ cantidadTestsEvaluar(2). % Actualizar con la cantidad de tests que entreguen
 testEvaluar(1) :- evaluar([],1,0).
 testEvaluar(2) :- evaluar([(4,0),(2,3)],2,3).
 
+mult(X, Y, R) :- R is X * Y.
+prod_of_list(L, P) :- foldl(mult, L, 1, P).
 
-
-cantidadTestsCodificacion(2). % Actualizar con la cantidad de tests que entreguen
+cantidadTestsCodificacion(6). %Actualizar con la cantidad de tests que entreguen
 testCodificacion(1) :- codificacionLista([],1).
 testCodificacion(2) :- codificacionLista([1],2).
-% Agregar más tests
+testCodificacion(3) :- codificacionLista([0], 1).
+testCodificacion(4) :- codificacionLista([0,0,0,0,0,0], 1).
+testCodificacion(5) :- iesimoPrimo(6, QP), codificacionLista([0,0,0,0,0,1,0], QP).
+testCodificacion(6) :- prod_of_list([2,3,5,7,11,13,17], PROD), codificacionLista([1,1,1,1,1,1,1], PROD).
+
 
 cantidadTestsSnapYstp(23). % Actualizar con la cantidad de tests que entreguen
 testSnapYstp(1) :- snap([10],[suma(0,1)],0,(1,X)), sonIguales(X, [(2,10)]).
