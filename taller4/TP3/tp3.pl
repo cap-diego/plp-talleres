@@ -312,11 +312,15 @@ sonIguales(L1,L2) :- length(L1,Size1), length(L2,Size2), Size1 = Size2,
 sonIgualesAux(_,[]).
 sonIgualesAux(L,[X2|L2]) :- member(X2,L), sonIgualesAux(L,L2).
 
-cantidadTestsHalt(3). % Actualizar con la cantidad de tests que entreguen
+cantidadTestsHalt(7). % Actualizar con la cantidad de tests que entreguen
 testHalt(1) :- pseudoHalt(1,[suma(0,1)]).
 testHalt(2) :- pseudoHalt(4,[nada(1,1), goto(2,2,5), suma(1,1), nada(1,1)]).
 % testHalt(3) :- pseudoHalt(4,[nada(1,1), goto(2,2,1)]). % se tilda.
-testHalt(3) :- pseudoHalt2(10,[suma(0,1)]), !.
+testHalt(3) :- pseudoHalt2(10,[suma(0,1)]).
+testHalt(4) :- pseudoHalt3(15,[goto(0, 3, 1)]).
+testHalt(5) :- pseudoHalt3(5,[resta(0, 1), resta(0, 1),resta(0, 1), resta(0, 1)]).
+testHalt(6) :- pseudoHalt3(6,[goto(0, 1, 1), resta(0, 1)]).
+testHalt(7) :- pseudoHalt3(10,[goto(0, 1, 1), suma(0, 1), resta(0, 1)]).
 
 % Agregar más tests
 
