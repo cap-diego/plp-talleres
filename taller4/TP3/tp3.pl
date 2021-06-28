@@ -164,21 +164,29 @@ armarEstadoConEntradaXSReverse([X|L],Estado) :- length(L,S), S > 0, Size is S + 
 avanzarIndice(_,_,Instruccion,Indice,I) :- 
 							codigoInstruccion(Instruccion,Codigo),
 							Codigo < 3, I is Indice+1.
+							
 avanzarIndice(_,S,Instruccion,Indice,I) :-
-							codigoInstruccion(Instruccion,Codigo),
-							Codigo >= 3,
-							variableInstruccion(Instruccion,V),
-							evaluar(S, V, Valor),
-							Valor =:= 0,
-							I is Indice+1.
+							instanciarValorYCodigoGoTo(Instruccion,S,Valor,_),
+							Valor =:= 0, I is Indice+1.
+							
 avanzarIndice(Programa,S,Instruccion,_,I) :-
-							codigoInstruccion(Instruccion,Codigo),
-							Codigo >= 3,
-							variableInstruccion(Instruccion,V),
-							evaluar(S, V, Valor),
+							instanciarValorYCodigoGoTo(Instruccion,S,Valor,Codigo),
 							Valor \= 0,
 							Etiqueta is Codigo-2,
-							indiceDeEtiqueta(Programa,Etiqueta,I).
+ 							indiceDeEtiqueta(Programa,Etiqueta,I).
+							
+% aux(0,_,_,Indice,I) :- I is Indice+1 .
+% aux(Valor,Codigo,Programa,_,I) :- nonvar(Programa), Valor > 0,
+% 								  Etiqueta is Codigo-2,
+% 								  indiceDeEtiqueta(Programa,Etiqueta,I).
+
+				
+% instanciarValorYCodigoGoTo(+I,+S,-Valor,-codigo)					
+instanciarValorYCodigoGoTo(Instruccion,S,Valor,Codigo) :-	
+													codigoInstruccion(Instruccion,Codigo),
+													Codigo >= 3,
+													variableInstruccion(Instruccion,V),
+													evaluar(S, V, Valor).
 						
 							
 							
@@ -232,12 +240,12 @@ stp(XS,P,T) :- longitud(P,L), snap(XS, P, T, Di), pi1(Di,ProxI), ProxI > L.
 
 % Buscar entradas para las cuales el programa Y termina
 % pseudoHalt2(-X, +Y)
-pseudoHalt2(E, P) :- desde2(1,T), pseudoHalt(T, P), E is T.
+pseudoHalt2(E, P) :- desde2(0,E), pseudoHalt(E, P).
 % COMPLETAR
 
 % Buscar pares programa-entrada que terminen
 % pseudoHalt3(-X, -Y)
-pseudoHalt3(E, P) :- desde2(1,E), between(1,E,Y), N is E - Y, programa(P,N), pseudoHalt(E, P).
+pseudoHalt3(E, P) :- desde2(0,E), between(0,E,Y), N is E - Y, programa(P,N), pseudoHalt(E, P).
 
 % programa(-P, +N)
 programa([], 0).
@@ -258,8 +266,7 @@ instruccion(goto(L,V,E),N) :- N > 2, N2 is N-1, between(1,N2,V), N3 is N-V, betw
 cantidadTestsEvaluar(2). % Actualizar con la cantidad de tests que entreguen
 testEvaluar(1) :- evaluar([],1,0).
 testEvaluar(2) :- evaluar([(4,0),(2,3)],2,3).
-%caso anomalo ---> raro
-testEvaluar(3) :- evaluar([(4,0),(4,2)],4,0).
+
 
 
 cantidadTestsCodificacion(2). % Actualizar con la cantidad de tests que entreguen
@@ -303,7 +310,9 @@ sonIgualesAux(L,[X2|L2]) :- member(X2,L), sonIgualesAux(L,L2).
 cantidadTestsHalt(3). % Actualizar con la cantidad de tests que entreguen
 testHalt(1) :- pseudoHalt(1,[suma(0,1)]).
 testHalt(2) :- pseudoHalt(4,[nada(1,1), goto(2,2,5), suma(1,1), nada(1,1)]).
-testHalt(3) :- pseudoHalt(4,[nada(1,1), goto(2,2,1)]).
+% testHalt(3) :- pseudoHalt(4,[nada(1,1), goto(2,2,1)]). % se tilda.
+testHalt(3) :- pseudoHalt2(10,[suma(0,1)]), !.
+
 % Agregar más tests
 
 tests(evaluar) :- cantidadTestsEvaluar(M), forall(between(1,M,N), testEvaluar(N)).
