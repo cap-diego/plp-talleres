@@ -231,8 +231,6 @@ stp(XS,P,T) :- longitud(P,L), snap(XS, P, T, Di), pi1(Di,ProxI), ProxI > L.
 
 
 
-
-
 %% Pseudo-Halt
 
 % pseudoHalt(+X, +P)
@@ -240,12 +238,16 @@ stp(XS,P,T) :- longitud(P,L), snap(XS, P, T, Di), pi1(Di,ProxI), ProxI > L.
 
 % Buscar entradas para las cuales el programa Y termina
 % pseudoHalt2(-X, +Y)
-pseudoHalt2(E, P) :- desde2(0,E), pseudoHalt(E, P).
+pseudoHalt2(E, P) :- desde2(0,N), between(0,N,E), T is N-E, stp([E],P,T), Prev is T-1,
+					not(stp([E],P,Prev)).
 % COMPLETAR
 
 % Buscar pares programa-entrada que terminen
 % pseudoHalt3(-X, -Y)
-pseudoHalt3(E, P) :- desde2(0,E), between(0,E,Y), N is E - Y, programa(P,N), pseudoHalt(E, P).
+
+pseudoHalt3(E,P) :- desde2(0,Inf), between(0,Inf,E), N is Inf - E, between(0,N,T), NP is N-T, programa(P,NP),stp([E],P,T), 
+					Prev is T-1, not(stp([E],P,Prev)).
+
 
 % programa(-P, +N)
 programa([], 0).
