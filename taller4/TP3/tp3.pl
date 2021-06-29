@@ -27,7 +27,7 @@ esInstruccionValida(goto(L,V,E)) :- L >= 0, V > 0, E > 0.
 
 evaluar([], _, 0).
 evaluar([(VARIABLE,_)|L],VAR, VAL) :- VARIABLE \= VAR, evaluar(L,VAR, VAL).
-evaluar([(VARIABLE,VALOR)|_],VAR, VAL) :- VARIABLE =:= VAR, VAL is VALOR .
+evaluar([(VARIABLE,VALOR)|_],VAR, VAL) :- VARIABLE =:= VAR, VAL is VALOR.
 
 %% CODIFICACIÓN
 
@@ -51,7 +51,7 @@ esPrimo(P) :- P \= 1, Pm1 is P-1, not((between(2, Pm1, X), divide(X, P))).
 iesimoPrimo(I,P) :- iesimoPrimoDesde(I,2,P).
 
 
-iesimoPrimoDesde(I,V,P) :- I =:= 1, esPrimo(V), P is V. 
+iesimoPrimoDesde(1,V,P) :- esPrimo(V), P is V. 
 
 iesimoPrimoDesde(I,V,P) :- I > 1, esPrimo(V), 
 						   I2 is I-1,
@@ -263,20 +263,26 @@ instruccion(goto(L,V,E),N) :- N > 2, N2 is N-1, between(1,N2,V), N3 is N-V, betw
 
 %% TESTS
 
-cantidadTestsEvaluar(2). % Actualizar con la cantidad de tests que entreguen
+cantidadTestsEvaluar(7). % Actualizar con la cantidad de tests que entreguen
 testEvaluar(1) :- evaluar([],1,0).
 testEvaluar(2) :- evaluar([(4,0),(2,3)],2,3).
+testEvaluar(3) :- evaluar([(4,1),(4,2)],4,1). %No debería pasar de todas formas
+testEvaluar(4) :- evaluar([(4,0),(2,3)],1,0).
+testEvaluar(5) :- evaluar([(6,4),(2,3),(1,2)],1,2).
+testEvaluar(6) :- evaluar([(4,0),(110,110),(2,3)],110,110).
+testEvaluar(7) :- evaluar([(2,1),(4,2),(6,3)],2,1).
 
 mult(X, Y, R) :- R is X * Y.
 prod_of_list(L, P) :- foldl(mult, L, 1, P).
 
-cantidadTestsCodificacion(6). %Actualizar con la cantidad de tests que entreguen
+cantidadTestsCodificacion(7). %Actualizar con la cantidad de tests que entreguen
 testCodificacion(1) :- codificacionLista([],1).
 testCodificacion(2) :- codificacionLista([1],2).
 testCodificacion(3) :- codificacionLista([0], 1).
 testCodificacion(4) :- codificacionLista([0,0,0,0,0,0], 1).
 testCodificacion(5) :- iesimoPrimo(6, QP), codificacionLista([0,0,0,0,0,1,0], QP).
 testCodificacion(6) :- prod_of_list([2,3,5,7,11,13,17], PROD), codificacionLista([1,1,1,1,1,1,1], PROD).
+testCodificacion(7) :- codificacionLista([1,0,1], 10).
 
 
 cantidadTestsSnapYstp(23). % Actualizar con la cantidad de tests que entreguen
@@ -312,15 +318,18 @@ sonIguales(L1,L2) :- length(L1,Size1), length(L2,Size2), Size1 = Size2,
 sonIgualesAux(_,[]).
 sonIgualesAux(L,[X2|L2]) :- member(X2,L), sonIgualesAux(L,L2).
 
-cantidadTestsHalt(7). % Actualizar con la cantidad de tests que entreguen
+cantidadTestsHalt(10). % Actualizar con la cantidad de tests que entreguen
 testHalt(1) :- pseudoHalt(1,[suma(0,1)]).
 testHalt(2) :- pseudoHalt(4,[nada(1,1), goto(2,2,5), suma(1,1), nada(1,1)]).
 % testHalt(3) :- pseudoHalt(4,[nada(1,1), goto(2,2,1)]). % se tilda.
-testHalt(3) :- pseudoHalt2(10,[suma(0,1)]).
-testHalt(4) :- pseudoHalt3(15,[goto(0, 3, 1)]).
-testHalt(5) :- pseudoHalt3(5,[resta(0, 1), resta(0, 1),resta(0, 1), resta(0, 1)]).
-testHalt(6) :- pseudoHalt3(6,[goto(0, 1, 1), resta(0, 1)]).
-testHalt(7) :- pseudoHalt3(10,[goto(0, 1, 1), suma(0, 1), resta(0, 1)]).
+testHalt(3) :- pseudoHalt2(1,[goto(1,2,2), nada(1,1), goto(2,4,1)]).
+testHalt(4) :- pseudoHalt2(10,[suma(0,1)]).
+testHalt(5) :- pseudoHalt2(100,[nada(2,1), goto(2,2,1)]).
+testHalt(6) :- pseudoHalt2(0,[suma(2,1), goto(2,2,1)]).
+testHalt(7) :- pseudoHalt3(15,[goto(0, 3, 1)]).
+testHalt(8) :- pseudoHalt3(5,[resta(0, 1), resta(0, 1),resta(0, 1), resta(0, 1)]).
+testHalt(9) :- pseudoHalt3(6,[goto(0, 1, 1), resta(0, 1)]).
+testHalt(10) :- pseudoHalt3(10,[goto(0, 1, 1), suma(0, 1), resta(0, 1)]).
 
 % Agregar más tests
 
