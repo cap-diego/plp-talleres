@@ -51,7 +51,7 @@ esPrimo(P) :- P \= 1, Pm1 is P-1, not((between(2, Pm1, X), divide(X, P))).
 					   
 iesimoPrimo(1,2).
 iesimoPrimo(I,P) :- I > 1, N is I-1, iesimoPrimo(N,PrimoAnterior), 
-					P2 is PrimoAnterior + 1, desde(P2,X), esPrimo(X), P is X, !.
+					P2 is PrimoAnterior + 1, desde(P2,P), esPrimo(P), !.
 
 
 %desde(+X,-Y)
